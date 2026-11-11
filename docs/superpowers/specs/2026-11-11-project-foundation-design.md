@@ -95,6 +95,7 @@ The local course folder (`C:\Users\Adir\Desktop\BSC\שנה ג\סמסטר א\מב
 
 - `data/raw/totalsegmentator_small/Totalsegmentator_dataset_small_v201.zip`: 3.24 GB, Zenodo record 10047263, CC BY 4.0.
 - `data/raw/deepfluoro/`: 4.05 GB, the `deepfluoro/` folder of the HF dataset `eigenvivek/xvr-data`, CC BY-NC-ND 4.0. The `.pt` files are PyTorch pickles: always load them with `torch.load(..., weights_only=True)`.
+- **Finding (2026-11-11, `data/scripts/screen_local.py`):** of the subset's 102 subjects, 77 have a hip mask, but only **47 have a complete pelvis** (in the rest the CT's field of view cuts it). Only **27 are complete and metal-free** (hip prostheses, fixation rods). The project needs a completeness + metal filter **before** the train/val/test split, and the proposal's estimate of usable pelvis cases must be revised. Expect a similar ratio in the full dataset (~1228 → roughly 300 usable). The results are in `data/raw/totalsegmentator_small/screen.json` (local).
 - The full TotalSegmentator (23.58 GB, Zenodo 10047292) is **not** downloaded locally. A Kaggle notebook downloads it, crops the pelvis to 64³ and saves only the result.
 
 ### Video path (decided by Adir: focus on computer vision and neural networks, not medicine; links checked 2026-11-11)
