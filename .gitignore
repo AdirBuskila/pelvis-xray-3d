@@ -1,5 +1,6 @@
 # datasets and derived volumes: never commit (size + licenses)
-data/
+/data/*
+!/data/scripts/
 *.nii
 *.nii.gz
 *.dcm
@@ -16,3 +17,14 @@ __pycache__/
 .ipynb_checkpoints/
 .venv/
 *.egg-info/
+
+# videos: generated/derived content stays local
+videos/node_modules/
+videos/out/
+videos/.venv/
+# DeepFluoro is CC BY-NC-ND: nothing derived from it may be shared. Those assets live only in these folders.
+# (TotalSegmentator-derived assets are CC BY 4.0 and ARE committed, so CI can render the videos.)
+videos/public/data/spike/
+videos/public/data/df_*/
+videos/bundle/
+videos/plan.json

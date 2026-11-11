@@ -1,0 +1,101 @@
+# Renders the teaching videos in parallel: each video is split into frame chunks, every chunk
+# renders on its own runner (software WebGL, no GPU), then the chunks are joined and published.
+name: render-videos
+
+on:
+  workflow_dispatch:
+    inputs:
+      videos:
+        description: "Comma-separated composition ids (e.g. V00,V01). Empty = all."
+        required: false
+        default: ""
+      chunk_frames:
+        description: "Frames per chunk (60 fps: 1200 = 20 s)"
+        required: false
+        default: "1200"
+
+concurrency:
+  group: render-videos
+  cancel-in-progress: false
+
+defaults:
+  run:
+    working-directory: videos
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: videos/package-lock.json }
+      - run: npm ci
+      - id: plan
+        run: |
+          node scripts/plan.mjs "${{ inputs.videos }}" "${{ inputs.chunk_frames }}" > matrix.json
+          echo "matrix=$(cat matrix.json)" >> "$GITHUB_OUTPUT"
+          cat plan.json
+      - uses: actions/upload-artifact@v4
+        with: { name: plan, path: videos/plan.json }
+
+  render:
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix: ${{ fromJson(needs.plan.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: videos/package-lock.json }
+      - run: npm ci
+      - name: Fonts and libs for headless Chrome
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq libnss3 libgbm1 libasound2t64 fonts-noto-core > /dev/null
+      - name: Render chunk ${{ matrix.video }} [${{ matrix.start }}-${{ matrix.end }}]
+        run: >
+          npx remotion render src/index.ts ${{ matrix.video }} out/${{ matrix.video }}_${{ matrix.idx }}.mp4
+          --frames=${{ matrix.start }}-${{ matrix.end }} --muted --gl=swangle --codec=h264 --crf=16
+          --concurrency=3 --log=info
+      - uses: actions/upload-artifact@v4
+        with:
+          name: chunk_${{ matrix.video }}_${{ matrix.idx }}
+          path: videos/out/${{ matrix.video }}_${{ matrix.idx }}.mp4
+          retention-days: 3
+
+  assemble:
+    needs: [plan, render]
+    if: always() && needs.render.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: videos/package-lock.json }
+      - run: npm ci
+      - uses: actions/download-artifact@v4
+        with: { pattern: chunk_*, path: videos/chunks, merge-multiple: true }
+      - uses: actions/download-artifact@v4
+        with: { name: plan, path: videos }
+      - name: Join chunks + add the audio track (rendered once, so there are no clicks at chunk seams)
+        run: |
+          mkdir -p final
+          for v in $(node -e "for (const x of require('./plan.json').videos) console.log(x.id)"); do
+            ls chunks/${v}_*.mp4 | sort | sed "s|^|file '$PWD/|; s|$|'|" > list_$v.txt
+            ffmpeg -v error -f concat -safe 0 -i list_$v.txt -c copy video_$v.mp4
+            npx remotion render src/index.ts $v audio_$v.aac --codec=aac --log=error
+            ffmpeg -v error -i video_$v.mp4 -i audio_$v.aac -c:v copy -c:a copy -shortest -movflags +faststart final/$v.mp4
+            ffprobe -v error -show_entries format=duration -of csv=p=0 final/$v.mp4
+          done
+      - uses: actions/upload-artifact@v4
+        with: { name: videos, path: videos/final/*.mp4 }
+      - name: Publish to a GitHub Release
+        env: { GH_TOKEN: "${{ github.token }}" }
+        run: |
+          tag="videos-$(date +%Y%m%d-%H%M)"
+          gh release create "$tag" final/*.mp4 --title "Teaching videos ($tag)" \
+            --notes "Rendered by GitHub Actions from ${{ github.sha }}. CT data: TotalSegmentator (CC BY 4.0, Wasserthal et al. 2023)."
