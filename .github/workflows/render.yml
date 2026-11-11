@@ -80,6 +80,8 @@ jobs:
         with: { pattern: chunk_*, path: videos/chunks, merge-multiple: true }
       - uses: actions/download-artifact@v4
         with: { name: plan, path: videos }
+      - name: Install ffmpeg (not preinstalled on ubuntu-24.04 runners)
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg > /dev/null
       - name: Join chunks + add the audio track (rendered once, so there are no clicks at chunk seams)
         run: |
           mkdir -p final
