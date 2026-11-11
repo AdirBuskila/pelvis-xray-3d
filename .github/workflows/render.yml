@@ -14,9 +14,8 @@ on:
         required: false
         default: "1200"
 
-concurrency:
-  group: render-videos
-  cancel-in-progress: false
+# no concurrency group: a group keeps only ONE pending run (newer ones replace it).
+# Jobs queue naturally against the account's parallel-job limit instead.
 
 defaults:
   run:
