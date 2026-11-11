@@ -34,7 +34,7 @@ jobs:
       - run: npm ci
       - id: plan
         run: |
-          node scripts/plan.mjs "${{ inputs.videos }}" "${{ inputs.chunk_frames }}" > matrix.json
+          node scripts/plan.mjs "${{ inputs.videos }}" "${{ inputs.chunk_frames }}"
           echo "matrix=$(cat matrix.json)" >> "$GITHUB_OUTPUT"
           cat plan.json
       - uses: actions/upload-artifact@v4

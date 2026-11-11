@@ -6,6 +6,7 @@ import path from "node:path";
 import fs from "node:fs";
 
 const wanted = (process.argv[2] || "").split(",").map((s) => s.trim()).filter(Boolean);
+const LOCAL_ONLY = ["V13"];
 const chunk = Number(process.argv[3] || 1200);
 const serveUrl = await bundle({ entryPoint: path.resolve("src/index.ts"), outDir: path.resolve("bundle") });
 const comps = await getCompositions(serveUrl, { chromiumOptions: { gl: "swangle" } });
@@ -14,6 +15,7 @@ const videos = [];
 for (const c of comps) {
   if (wanted.length && !wanted.includes(c.id)) continue;
   if (c.id.startsWith("Spike")) continue;
+  if (LOCAL_ONLY.includes(c.id)) continue; // DeepFluoro-based: assets are not in the repo
   videos.push({ id: c.id, frames: c.durationInFrames, fps: c.fps });
   for (let a = 0, i = 0; a < c.durationInFrames; a += chunk, i++) {
     const b = Math.min(a + chunk, c.durationInFrames) - 1;
@@ -21,4 +23,5 @@ for (const c of comps) {
   }
 }
 fs.writeFileSync("plan.json", JSON.stringify({ include, videos }, null, 1));
-console.log(JSON.stringify({ include }));
+// written to a file (not stdout): Remotion logs browser-download notices to stdout
+fs.writeFileSync("matrix.json", JSON.stringify({ include }));
