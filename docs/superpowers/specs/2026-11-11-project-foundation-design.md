@@ -97,11 +97,20 @@ The local course folder (`C:\Users\Adir\Desktop\BSC\שנה ג\סמסטר א\מב
 - `data/raw/deepfluoro/`: 4.05 GB, the `deepfluoro/` folder of the HF dataset `eigenvivek/xvr-data`, CC BY-NC-ND 4.0. The `.pt` files are PyTorch pickles: always load them with `torch.load(..., weights_only=True)`.
 - The full TotalSegmentator (23.58 GB, Zenodo 10047292) is **not** downloaded locally. A Kaggle notebook downloads it, crops the pelvis to 64³ and saves only the result.
 
-### Unit 01 videos (checked 2026-11-11)
+### Video path (decided by Adir: focus on computer vision and neural networks, not medicine; links checked 2026-11-11)
 
-- Part A: [CT physics overview](https://www.youtube.com/watch?v=mvMO7CsU2To), Radiology Tutorials, 19 min. It doesn't cover Beer–Lambert, so the explainer does. Optional: [Hounsfield Scale / windowing](https://www.youtube.com/watch?v=F3SoKoqYZMU), 20 min.
-- Part B: [Pinhole and Perspective Projection](https://www.youtube.com/watch?v=_EhY31MSbNM), First Principles of Computer Vision, 20 min.
-- NIfTI is covered by the explainer and notebook; the videos found were 50–96 min, too long for what's needed.
+The main series is [Andreas Geiger's Computer Vision (Tübingen)](https://www.youtube.com/playlist?list=PL05umP7R6ij35L2MHGzis8AEHz7mg381_). Basic CNNs are already covered by their Deep Learning course, so the path concentrates on what's new in this project.
+
+| Unit | Topic | Video | Length |
+|---|---|---|---|
+| 01 | pinhole, perspective vs orthographic projection | [Geiger 2.2 Geometric Image Formation](https://www.youtube.com/watch?v=NIaICLR7D0Q) (optional, easier: [Nayar, Pinhole and Perspective Projection](https://www.youtube.com/watch?v=_EhY31MSbNM), 20 min) | 35 min |
+| 02 | voxels → surfaces | [Sebastian Lague, Marching Cubes](https://www.youtube.com/watch?v=M3iI2l0ltbE) + [Geiger 8.4 Volumetric Fusion](https://www.youtube.com/watch?v=B2BTSKcYqtQ) | 6 + 38 min |
+| 03 | why a second view gives depth; is reconstruction just retrieval? | [Geiger 4.1 Stereo Preliminaries](https://www.youtube.com/watch?v=6hr6xpOU-uw) + paper [Tatarchenko et al. 2019](https://arxiv.org/abs/1905.03678), §1–4 | 44 min + ~30 min reading |
+| 04 | segmentation, U-Net, transposed conv | [Geiger 10.2 Semantic Segmentation](https://www.youtube.com/watch?v=NhSujgDL918) + [U-Net in 10 min](https://www.youtube.com/watch?v=NhdzGfB1q74) + [Transpose Conv vs Unpooling](https://www.youtube.com/watch?v=JnN_1Nh7w4M) | 16 + 10 + 6 min |
+| 05 | networks that output 3D: voxels, points, meshes, occupancy | [Geiger 9.1 Implicit Neural Representations](https://www.youtube.com/watch?v=r6n3tZJoTdI) | 45 min |
+| 07 | rendering as a differentiable operation (idea behind DiffDRR) | [Geiger 9.2 Differentiable Volumetric Rendering](https://www.youtube.com/watch?v=3e64ILZBJUs) | 28 min |
+
+Medical background is optional only: [CT physics overview](https://www.youtube.com/watch?v=mvMO7CsU2To), 19 min. The unit 01 explainer covers the HU and Beer–Lambert parts the project needs. The Michigan EECS 498 lectures (Justin Johnson) were checked and are now **private** on YouTube, so they aren't used.
 
 ### Timeline (Claude's call; the deadline isn't known yet)
 
