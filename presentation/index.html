@@ -1,0 +1,564 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Two X-rays → 3D Pelvis · Adir & Noa</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="vendor/reveal/reset.css">
+<link rel="stylesheet" href="vendor/reveal/reveal.css">
+<link rel="stylesheet" href="deck.css">
+<style>
+  .reveal .print-only { display: none !important; }
+  html.print-pdf .reveal .print-only { display: block !important; }
+  .hero-vid { position: absolute; top: 20px; right: -160px; width: 1500px; height: auto; pointer-events: none;
+    -webkit-mask-image: radial-gradient(ellipse 48% 50% at 50% 50%, #000 62%, transparent 100%); mask-image: radial-gradient(ellipse 48% 50% at 50% 50%, #000 62%, transparent 100%); }
+  .hero-vid.far { right: -330px; top: -20px; }
+  html.print-pdf video { display: none !important; }
+  .notes-he { direction: rtl; text-align: right; }
+</style>
+</head>
+<body>
+<div class="reveal"><div class="slides">
+
+<!-- 1 · TITLE ------------------------------------------------------------ -->
+<section>
+  <video class="hero-vid" src="media/hero.mp4" poster="media/hero.jpg" muted loop playsinline data-autoplay></video>
+  <img class="print-only hero-vid" src="media/hero.jpg">
+  <div class="scrim"></div>
+  <div class="title-wrap">
+    <div class="kicker">Final project proposal <span class="n">·</span> Intro to CV in Medical Imaging</div>
+    <h1>Two X-rays<br><span class="x">→</span> a 3D pelvis</h1>
+    <p class="lede">Learning the 3D shape of a bone from one front and one side radiograph, and measuring how well it holds up on real X-rays.</p>
+    <div class="names"><span><b>Adir Buskila</b></span><span><b>Noa Zadok</b></span><span>HIT · 2026</span></div>
+  </div>
+  <aside class="notes"><div class="notes-he">
+    <p><b>🎤 אדיר · כ-25 שניות</b></p>
+    <p>שלום לכולם, אני אדיר וזאת נועה. הפרויקט שלנו: לקחת שני צילומי רנטגן רגילים של האגן, אחד מקדימה ואחד מהצד, ולשחזר מהם את הצורה התלת-ממדית של העצם.</p>
+    <p>מה שאתם רואים ברקע הוא לא איור: זה אגן אמיתי מתוך סריקת CT במאגר שאנחנו עובדים איתו.</p>
+  </div></aside>
+</section>
+
+<!-- 2 · THE QUESTION ----------------------------------------------------- -->
+<section>
+  <div class="frame">
+    <div class="kicker"><span class="n">01</span> The question</div>
+    <h2>Given an <span class="x">AP</span> and a <span class="x">lateral</span> X-ray, how well can a learned model recover the bone in 3D?</h2>
+    <div class="body" style="top:330px">
+      <div class="cols" style="grid-template-columns: 330px 200px 70px 1fr; gap: 30px; align-items:center">
+        <div class="media"><img class="xr" src="img/drr_ap@4.png" alt="AP view"><span class="tag">AP</span></div>
+        <div class="media"><img class="xr" src="img/drr_lat@4.png" alt="Lateral view"><span class="tag">LAT</span></div>
+        <div style="font-size:64px;color:var(--xray);text-align:center">→</div>
+        <div class="media" style="max-width:720px"><video src="media/voxels.mp4" poster="media/voxels.jpg" muted playsinline data-autoplay></video><img class="print-only" src="media/voxels.jpg"><span class="tag">3D occupancy · 64³</span></div>
+      </div>
+      <p class="small" style="margin-top:34px">Both X-rays here are simulated from a real CT scan (subject s1390, TotalSegmentator), so the true 3D answer is known.</p>
+    </div>
+  </div>
+  <aside class="notes"><div class="notes-he">
+    <p><b>🎤 אדיר · כ-35 שניות</b></p>
+    <p>שאלת המחקר שלנו: אם נותנים למודל צילום קדמי, AP, וצילום צדי, לטרל, עד כמה הוא מצליח לשחזר את העצם בתלת-ממד?</p>
+    <p>שני הצילומים כאן הם צילומים מדומים שיצרנו בעצמנו מסריקת CT אמיתית. היתרון: כיוון שיש לנו את ה-CT, אנחנו יודעים בדיוק מה התשובה הנכונה, ולכן אפשר למדוד את השחזור במספרים ולא רק "נראה טוב".</p>
+    <p>מימין: הפלט שהרשת אמורה לחזות: רשת של 64 על 64 על 64 קוביות, ובכל קובייה עצם או לא עצם.</p>
+  </div></aside>
+</section>
+
+<!-- 3 · WHERE IT SITS IN THE COURSE ------------------------------------- -->
+<section>
+  <div class="frame">
+    <div class="kicker"><span class="n">02</span> Why this project</div>
+    <h2>Project 7 goes from a CT volume to a surface. We go the <span class="hl">other way</span>.</h2>
+    <div class="body" style="top:300px">
+      <div class="cols c2" style="gap:44px; align-items:stretch">
+        <div class="card">
+          <div class="kicker" style="color:var(--mute)">Project 7 · forward</div>
+          <h3>3D is already given</h3>
+          <p style="margin-top:14px">CT volume → 2D U-Net segments each slice → marching cubes → surface. The network only labels voxels that are already there.</p>
+        </div>
+        <div class="card on fragment rise">
+          <div class="kicker">Ours · inverse</div>
+          <h3>3D must be recovered</h3>
+          <p style="margin-top:14px">Two projections → network → 3D bone. Weeks 9–12 of the course in one pipeline: camera geometry, perspective projection, voxels and meshes.</p>
+        </div>
+      </div>
+      <p class="lede fragment rise" style="margin-top:44px !important">A CT scanner solves this with <span class="x">hundreds</span> of projections. We have <span class="hl">two</span>.</p>
+    </div>
+  </div>
+  <aside class="notes"><div class="notes-he">
+    <p><b>🎤 אדיר · כ-35 שניות</b></p>
+    <p>ברשימת הפרויקטים יש את פרויקט 7: לוקחים נפח CT, מסגמנטים כל פרוסה עם U-Net, ומרכיבים משטח. שם התלת-ממד כבר נתון, והרשת רק צובעת אותו.</p>
+    <p>(קליק) אנחנו הולכים בכיוון ההפוך: מתחילים מהטלות, ומשחזרים את התלת-ממד. זה מחבר את כל החומר של שבועות 9 עד 12: גאומטריית מצלמה, הטלה פרספקטיבית, ווקסלים ו-mesh.</p>
+    <p>(קליק) סורק CT עושה את זה עם מאות הטלות. לנו יש שתיים. וזה בדיוק מה שהופך את זה למעניין.</p>
+  </div></aside>
+</section>
+
+<!-- 4 · WHY IT'S HARD ---------------------------------------------------- -->
+<section>
+  <div class="frame">
+    <div class="kicker"><span class="n">03</span> Why it's hard</div>
+    <h2>An X-ray is a <span class="x">sum along each ray</span>. Depth is gone.</h2>
+    <div class="body" style="top:280px">
+      <div class="cols c55-45" style="align-items:start">
+        <div class="media"><video src="media/ambiguity.mp4" poster="media/ambiguity.jpg" muted playsinline data-autoplay></video><img class="print-only" src="media/ambiguity.jpg"></div>
+        <div>
+          <div class="eq">p = ∫ <i>μ</i>(s) ds &nbsp;&nbsp; I = I<sub>0</sub>·e<sup>−p</sup></div>
+          <ul class="bul" style="margin-top:40px">
+            <li class="fragment rise">Every pixel stores <b>one number per ray</b>: the total attenuation <span class="hl">μ</span> along it.</li>
+            <li class="fragment rise">Very different 3D shapes can produce <b>the same pixel</b>.</li>
+            <li class="fragment rise">Even with two views there is <b>no unique answer</b>. It is an ill-posed inverse problem.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes"><div class="notes-he">
+    <p><b>🎤 אדיר · כ-40 שניות</b></p>
+    <p>למה זה קשה? כל פיקסל בצילום רנטגן הוא קרן אחת שעברה דרך כל הגוף. מה שנמדד זה הסכום של ההנחתה, מיו, לאורך הקרן: האינטגרל שבנוסחה.</p>
+    <p>(קליק) כלומר לכל קרן יש מספר אחד, וכל המידע על העומק, איפה לאורך הקרן העצם נמצאת, נעלם.</p>
+    <p>(קליק) בסרטון רואים: צורות שונות לגמרי לאורך אותה קרן נותנות בדיוק אותו פיקסל.</p>
+    <p>(קליק) ואפילו עם שתי זוויות, אין פתרון יחיד. זו בעיה הפוכה לא מוגדרת היטב, ובשביל לפתור אותה צריך ידע מוקדם על איך אגן נראה.</p>
+  </div></aside>
+</section>
+
+<!-- 5 · GEOMETRY ALONE IS NOT ENOUGH ------------------------------------ -->
+<section>
+  <div class="frame">
+    <div class="kicker"><span class="n">04</span> We measured it</div>
+    <h2>Geometry alone gets <span class="hl">Dice 0.37</span> from two views. A shape prior is needed.</h2>
+    <div class="body" style="top:300px">
+      <div class="cols c40-60" style="align-items:center">
+        <div class="media"><video src="media/hull.mp4" poster="media/hull.jpg" muted playsinline data-autoplay></video><img class="print-only" src="media/hull.jpg"><span class="tag">visual hull vs true pelvis</span></div>
+        <figure class="chart" style="margin:0">
+          <svg viewBox="0 0 780 440" width="100%" style="max-height:500px" role="img" aria-label="Visual-hull Dice versus number of views for the hero pelvis">
+            <title>Visual hull Dice vs number of views (hero pelvis s1390, 64³ grid)</title>
+            <!-- y grid: Dice 0, .2, .4, .6, .8 -->
+            <g>
+              <line class="grid" x1="70" x2="730" y1="360" y2="360"/><line class="grid" x1="70" x2="730" y1="280" y2="280"/>
+              <line class="grid" x1="70" x2="730" y1="200" y2="200"/><line class="grid" x1="70" x2="730" y1="120" y2="120"/>
+              <line class="grid" x1="70" x2="730" y1="40" y2="40"/>
+              <text class="tick" x="58" y="366" text-anchor="end">0</text><text class="tick" x="58" y="286" text-anchor="end">0.2</text>
+              <text class="tick" x="58" y="206" text-anchor="end">0.4</text><text class="tick" x="58" y="126" text-anchor="end">0.6</text>
+              <text class="tick" x="58" y="46" text-anchor="end">0.8</text>
+            </g>
+            <line class="axis" x1="70" x2="730" y1="360" y2="360"/>
+            <!-- x ticks (log scale) -->
+            <g class="tick" text-anchor="middle">
+              <text x="70" y="392">1</text><text x="158" y="392">2</text><text x="246" y="392">4</text><text x="334" y="392">8</text>
+              <text x="437" y="392">18</text><text x="526" y="392">36</text><text x="730" y="392">180</text>
+            </g>
+            <text class="sub" x="400" y="430" text-anchor="middle">number of X-ray views (silhouettes only)</text>
+            <!-- reference: nearest-neighbour from 2 views, mean of 27 -->
+            <line x1="70" x2="730" y1="132" y2="132" stroke="#ffcf7f" stroke-width="2" stroke-dasharray="7 7" opacity="0.85"/>
+            <text class="sub" x="725" y="160" text-anchor="end" style="fill:#ffcf7f">copy the most similar pelvis, 2 views: 0.57</text>
+            <!-- series -->
+            <polyline fill="none" stroke="#7fd0ff" stroke-width="2.5" points="70,298 158,211 246,162 334,142 437,124 526,117 730,110"/>
+            <g fill="#7fd0ff" stroke="#05070b" stroke-width="2">
+              <circle class="pt" cx="70" cy="298" r="6"><title>1 view: Dice 0.15</title></circle>
+              <circle class="pt" cx="158" cy="211" r="9" fill="#ffcf7f"><title>2 views: Dice 0.37</title></circle>
+              <circle class="pt" cx="246" cy="162" r="6"><title>4 views: Dice 0.50</title></circle>
+              <circle class="pt" cx="334" cy="142" r="6"><title>8 views: Dice 0.55</title></circle>
+              <circle class="pt" cx="437" cy="124" r="6"><title>18 views: Dice 0.59</title></circle>
+              <circle class="pt" cx="526" cy="117" r="6"><title>36 views: Dice 0.61</title></circle>
+              <circle class="pt" cx="730" cy="110" r="6"><title>180 views: Dice 0.62</title></circle>
+            </g>
+            <text class="val" x="172" y="240">0.37</text>
+            <text class="val" x="716" y="96" text-anchor="end">0.62</text>
+          </svg>
+        </figure>
+      </div>
+      <p class="foot">Visual hull = intersect the back-projected silhouettes. Curve: hero pelvis s1390; 2-view hull over all 27 clean subjects: Dice 0.38 ± 0.02. Dashed line: mean over the same 27 (leave-one-out). 64³ grid, 5.5 mm cells.</p>
+    </div>
+  </div>
+  <aside class="notes"><div class="notes-he">
+    <p><b>🎤 נועה · כ-45 שניות</b></p>
+    <p>בדקנו את זה כבר על הנתונים שלנו. השיטה הגאומטרית הטהורה נקראת visual hull: לוקחים את הצללית של העצם בכל צילום, "מותחים" אותה לאורך כיוון הקרניים, וחותכים. מה שנשאר זה כל מה שיכול להיות עצם.</p>
+    <p>משני צילומים זה נותן Dice של 0.37 בלבד. הגרף מראה שגם עם 180 צילומים זה נתקע בסביבות 0.62, כי צלליות לא רואות שקעים בעצם.</p>
+    <p>והקו המקווקו: אם במקום גאומטריה פשוט מעתיקים את האגן הכי דומה מהמאגר, משני צילומים בלבד מקבלים 0.57, כמו בערך 12 צילומים של גאומטריה. זה ההוכחה שידע מוקדם על הצורה שווה המון, וזה בדיוק מה שהרשת אמורה ללמוד.</p>
+  </div></aside>
+</section>
+
+<!-- 6 · DATA ------------------------------------------------------------- -->
+<section>
+  <div class="frame">
+    <div class="kicker"><span class="n">05</span> Data</div>
+    <h2>Open CT for training, real fluoroscopy for the final test.</h2>
+    <div class="body" style="top:290px">
+      <div class="cols c2" style="align-items:start; gap:70px">
+        <div>
+          <div class="card" style="margin-bottom:24px">
+            <h3>TotalSegmentator <span class="small mono">· CC BY 4.0</span></h3>
+            <p>1,228 CT scans with 117 labelled structures, including hips and sacrum. Used for training and simulated testing.</p>
+          </div>
+          <div class="card warm">
+            <h3>DeepFluoro <span class="small mono">· CC BY-NC-ND</span></h3>
+            <p>6 cadavers with <span class="hl">real</span> fluoroscopy and a matching CT. Used only for the final sim-to-real test.</p>
+          </div>
+        </div>
+        <div>
+          <h3 style="margin-bottom:26px">Our screen of the 102-scan subset</h3>
+          <div class="funnel">
+            <div class="fun"><div class="bar" style="width:560px">102</div><span class="lab">scans</span></div>
+            <div class="fun fragment rise"><div class="bar" style="width:423px">77</div><span class="lab">contain the hips</span></div>
+            <div class="fun fragment rise"><div class="bar" style="width:258px">47</div><span class="lab">complete pelvis in view</span></div>
+            <div class="fun fragment rise"><div class="bar last" style="width:148px">27</div><span class="lab">complete and metal-free</span></div>
+          </div>
+          <p class="small fragment rise" style="margin-top:30px">Filter <b style="color:var(--text)">before</b> splitting, split by patient, and run the same filter on the full 1,228 on Kaggle.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes"><div class="notes-he">
+    <p><b>🎤 נועה · כ-45 שניות</b></p>
+    <p>הנתונים. לאימון: TotalSegmentator, מאגר פתוח של 1,228 סריקות CT עם 117 מבנים מסומנים, כולל עצמות האגן. לבדיקה הסופית: DeepFluoro, שש גופות שיש להן גם צילומי פלואורוסקופיה אמיתיים וגם CT תואם. זה מה שמאפשר למדוד על רנטגן אמיתי.</p>
+    <p>(קליק) כבר עברנו על תת-קבוצה של 102 סריקות וגילינו משהו חשוב: רק ב-77 רואים את האגן, (קליק) רק ב-47 הוא שלם בתוך התמונה, (קליק) ורק 27 שלמים וגם בלי מתכת כמו תותבות.</p>
+    <p>(קליק) המסקנה: חייבים לסנן לפני שמחלקים לאימון ובדיקה, לחלק לפי מטופל, ולהריץ את אותו סינון על המאגר המלא ב-Kaggle.</p>
+  </div></aside>
+</section>
+
+<!-- 7 · DRR -------------------------------------------------------------- -->
+<section>
+  <div class="frame">
+    <div class="kicker"><span class="n">06</span> Simulated X-rays</div>
+    <h2>We render our own X-rays from CT: <span class="x">DRRs</span>.</h2>
+    <div class="body" style="top:270px">
+      <div class="cols c55-45" style="align-items:start">
+        <div class="media"><video src="media/rig.mp4" poster="media/rig.jpg" muted playsinline data-autoplay></video><img class="print-only" src="media/rig.jpg"></div>
+        <div>
+          <div class="eq" style="font-size:34px"><i>μ</i> = 0.02 · (1 + HU / 1000) mm<sup>−1</sup></div>
+          <ul class="bul" style="margin-top:36px">
+            <li>Convert CT numbers (HU) to <b>attenuation</b>, then sum along each ray.</li>
+            <li>Same pinhole-camera model as weeks 9–10, but the object is <b>semi-transparent</b>.</li>
+            <li><b>NumPy</b> version first (parallel beams), then <b>DiffDRR</b>: perspective and differentiable.</li>
+            <li>Unlimited AP + LAT pairs with <b>perfect 3D ground truth</b>.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes"><div class="notes-he">
+    <p><b>🎤 נועה · כ-40 שניות</b></p>
+    <p>איך יוצרים צילום רנטגן מ-CT? זה נקרא DRR, צילום רנטגן משוחזר דיגיטלית. ממירים כל ערך CT, ביחידות הנספילד, להנחתה לפי הנוסחה, ואז סוכמים לאורך כל קרן ממקור וירטואלי לגלאי וירטואלי.</p>
+    <p>זה בדיוק מודל מצלמת החור משבועות 9 ו-10, רק שהאובייקט שקוף למחצה.</p>
+    <p>נכתוב קודם גרסה פשוטה ב-NumPy כדי להבין כל שורה, ואחר כך נעבור ל-DiffDRR, ספריית PyTorch שעושה הטלה פרספקטיבית ודיפרנציאבילית. התוצאה: כמה זוגות שנרצה, וכל אחד עם התשובה התלת-ממדית המדויקת.</p>
+  </div></aside>
+</section>
+
+<!-- 8 · PIPELINE --------------------------------------------------------- -->
+<section>
+  <div class="frame">
+    <div class="kicker"><span class="n">07</span> Pipeline</div>
+    <h2>Five stages, one non-neural baseline.</h2>
+    <div class="body" style="top:290px">
+      <div class="pipe">
+        <div class="stg"><div class="box"><div class="num">01</div><div class="t">CT + mask</div><div class="s">TotalSegmentator, cropped to the pelvis</div></div></div>
+        <div class="arrow">→</div>
+        <div class="stg fragment rise"><div class="box"><div class="num">02</div><div class="t">DRR pair</div><div class="s">AP + LAT, DiffDRR</div></div></div>
+        <div class="arrow fragment rise">→</div>
+        <div class="stg fragment rise"><div class="box" style="border-color:rgba(127,208,255,.55)"><div class="num">03</div><div class="t x">2D → 3D net</div><div class="s">2D encoder, 3D decoder</div></div></div>
+        <div class="arrow fragment rise">→</div>
+        <div class="stg fragment rise"><div class="box"><div class="num">04</div><div class="t">64³ occupancy</div><div class="s">→ mesh with marching cubes</div></div></div>
+        <div class="arrow fragment rise">→</div>
+        <div class="stg fragment rise"><div class="box"><div class="num">05</div><div class="t">Metrics</div><div class="s">Dice, HD95, ASSD, Chamfer, a clinical angle</div></div></div>
+      </div>
+      <div class="card warm fragment rise" style="margin:46px auto 0; max-width:1100px; text-align:center">
+        <p style="color:var(--text); font-size:29px"><span class="hl">Baseline:</span> retrieve the training pelvis whose DRRs look most like the input, and score it with the <b>same</b> metrics.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes"><div class="notes-he">
+    <p><b>🎤 נועה · כ-40 שניות</b></p>
+    <p>הצינור כולו בחמישה שלבים. (קליקים) מתחילים מ-CT עם מסכת העצם, מרנדרים זוג צילומים, AP ולטרל, הרשת מקבלת אותם ומוציאה נפח של 64 בקובייה, ממנו בונים mesh עם marching cubes, ובסוף מודדים.</p>
+    <p>(קליק) ולצד זה baseline לא נוירוני: מחפשים במאגר האימון את האגן שהצילומים שלו הכי דומים לקלט, ומחזירים אותו כמו שהוא. נמדד באותם מדדים בדיוק. בלי זה אי אפשר לדעת אם הרשת באמת למדה משהו, או רק שיננה צורות.</p>
+  </div></aside>
+</section>
+
+<!-- 9 · MODEL ------------------------------------------------------------ -->
+<section>
+  <div class="frame">
+    <div class="kicker"><span class="n">08</span> Main method</div>
+    <h2>A 2D-encoder / 3D-decoder U-Net that predicts <span class="x">bone occupancy</span>.</h2>
+    <div class="body" style="top:300px">
+      <div class="cols c2" style="align-items:start">
+        <div>
+          <ul class="bul">
+            <li><b>Input:</b> AP and LAT DRRs. Each view is encoded by 2D convolutions.</li>
+            <li><b>Lift:</b> features from both views are combined and expanded into a 3D grid.</li>
+            <li><b>Output:</b> 64 × 64 × 64 probabilities of “bone here”.</li>
+            <li><b>Loss:</b> Dice + cross-entropy. A plain regression model, no GAN, so it can't invent anatomy.</li>
+            <li><b>Budget:</b> 3,000–5,000 iterations on a free T4 GPU (Colab / Kaggle).</li>
+          </ul>
+        </div>
+        <div class="media"><video src="media/voxels.mp4" poster="media/voxels.jpg" muted playsinline data-autoplay></video><img class="print-only" src="media/voxels.jpg"><span class="tag">64³ occupancy → mesh</span></div>
+      </div>
+      <p class="foot">Design follows the open biplanar bone-shape benchmark of Shakya & Khanal (NeurIPS 2023 Datasets & Benchmarks).</p>
+    </div>
+  </div>
+  <aside class="notes"><div class="notes-he">
+    <p><b>🎤 אדיר · כ-40 שניות</b></p>
+    <p>השיטה העיקרית: U-Net עם מקודד דו-ממדי ומפענח תלת-ממדי. כל צילום עובר דרך שכבות קונבולוציה דו-ממדיות, הפיצ'רים משני הצילומים מתאחדים ומורחבים לרשת תלת-ממדית, והמפענח מוציא לכל אחת מ-64 בשלישית הקוביות הסתברות שיש שם עצם.</p>
+    <p>ה-loss הוא Dice ועוד cross-entropy. בחרנו בכוונה מודל רגרסיה פשוט בלי GAN: מודלים אדברסריים ידועים בכך שהם ממציאים אנטומיה שלא קיימת.</p>
+    <p>וזה רץ על GPU חינמי, T4, ב-Colab או ב-Kaggle.</p>
+  </div></aside>
+</section>
+
+<!-- 10 · BASELINES ------------------------------------------------------- -->
+<section>
+  <div class="frame">
+    <div class="kicker"><span class="n">09</span> Baselines · already measured</div>
+    <h2>The bar to beat: <span class="hl">copy the most similar pelvis</span>.</h2>
+    <div class="body" style="top:290px">
+      <figure class="chart" style="margin:0">
+        <svg viewBox="0 0 1680 470" width="100%" role="img" aria-label="Baseline Dice scores over 27 subjects">
+          <title>Baseline Dice and HD95, mean over 27 clean subjects, leave-one-out, 64³ grid</title>
+          <!-- x grid: Dice 0..1 over x 470..1330 (860 px) -->
+          <g>
+            <line class="grid" x1="470" x2="470" y1="10" y2="410"/><line class="grid" x1="642" x2="642" y1="10" y2="410"/>
+            <line class="grid" x1="814" x2="814" y1="10" y2="410"/><line class="grid" x1="986" x2="986" y1="10" y2="410"/>
+            <line class="grid" x1="1158" x2="1158" y1="10" y2="410"/><line class="grid" x1="1330" x2="1330" y1="10" y2="410"/>
+            <g class="tick" text-anchor="middle"><text x="470" y="440">0</text><text x="642" y="440">0.2</text><text x="814" y="440">0.4</text><text x="986" y="440">0.6</text><text x="1158" y="440">0.8</text><text x="1330" y="440">1.0</text></g>
+            <text class="sub" x="900" y="468" text-anchor="middle">Dice (higher is better)</text>
+          </g>
+          <g text-anchor="end">
+            <text class="lbl" x="440" y="62">Visual hull (geometry)</text>
+            <text class="lbl" x="440" y="162">Random other pelvis</text>
+            <text class="lbl" x="440" y="262" style="fill:#ffcf7f">Nearest neighbour</text>
+            <text class="lbl" x="440" y="362">Best pelvis in database</text>
+            <text class="sub" x="440" y="388">oracle, upper bound of copying</text>
+          </g>
+          <!-- bars: 4px rounded data end, anchored at the baseline -->
+          <g>
+            <rect x="470" y="30" width="327" height="50" rx="4" fill="#7fd0ff" opacity="0.55"><title>Visual hull: Dice 0.38 ± 0.02, HD95 52.6 mm</title></rect>
+            <rect x="470" y="130" width="462" height="50" rx="4" fill="#7fd0ff" opacity="0.55"><title>Random pelvis: Dice 0.54 ± 0.04, HD95 16.5 mm</title></rect>
+            <rect x="470" y="230" width="491" height="50" rx="4" fill="#ffcf7f"><title>Nearest neighbour: Dice 0.57 ± 0.09, HD95 15.6 mm</title></rect>
+            <rect x="470" y="330" width="587" height="50" rx="4" fill="none" stroke="#7fd0ff" stroke-width="2" stroke-dasharray="8 6"><title>Oracle: Dice 0.68 ± 0.06, HD95 10.4 mm</title></rect>
+          </g>
+          <g>
+            <text class="val" x="812" y="63">0.38</text><text class="sub" x="880" y="63">HD95 52.6 mm</text>
+            <text class="val" x="947" y="163">0.54</text><text class="sub" x="1015" y="163">HD95 16.5 mm</text>
+            <text class="val" x="976" y="263">0.57</text><text class="sub" x="1044" y="263">HD95 15.6 mm</text>
+            <text class="val" x="1072" y="363">0.68</text><text class="sub" x="1140" y="363">HD95 10.4 mm</text>
+          </g>
+          <!-- published reference -->
+          <g class="fragment">
+            <line x1="1208" x2="1208" y1="10" y2="410" stroke="#7dffb0" stroke-width="2" stroke-dasharray="4 6"/>
+            <text class="sub" x="1222" y="30" style="fill:#7dffb0">published network, pelvis: 0.86</text>
+            <text class="sub" x="1222" y="54">different data and grid</text>
+          </g>
+        </svg>
+      </figure>
+      <p class="foot">Mean over the 27 clean subjects, leave-one-out; nearest neighbour = L2 distance between 32×32 AP+LAT line-integral images. 64³ grid, 5.5 mm cells. Published value: Shakya & Khanal 2023 (best pelvis Dice 85.8).</p>
+    </div>
+  </div>
+  <aside class="notes"><div class="notes-he">
+    <p><b>🎤 אדיר · כ-45 שניות</b></p>
+    <p>את ה-baselines כבר מדדנו, על 27 האגנים הנקיים, בשיטת leave-one-out.</p>
+    <p>גאומטריה טהורה: 0.37. אגן אקראי מהמאגר: כבר 0.54, כי כל האגנים די דומים. השכן הקרוב, האגן שהצילומים שלו הכי דומים: 0.57. וגם אם היינו בוחרים את האגן הכי טוב שיש במאגר, במבט לאחור, היינו מגיעים רק ל-0.68. זו התקרה של "להעתיק".</p>
+    <p>(קליק) לשם השוואה, ב-benchmark שפורסם רשת הגיעה ל-0.86 על אגן, אבל על נתונים ורזולוציה אחרים, אז זה כיוון ולא השוואה ישירה. היעד שלנו ברור: רשת שעוברת את 0.57, ואם אפשר את 0.68. אז נדע שהיא למדה צורה ולא רק שליפה.</p>
+  </div></aside>
+</section>
+
+<!-- 11 · EXPERIMENTS ----------------------------------------------------- -->
+<section>
+  <div class="frame">
+    <div class="kicker"><span class="n">10</span> Experiments</div>
+    <h2>Change one thing at a time.</h2>
+    <div class="body" style="top:250px">
+      <div class="cols c2" style="align-items:stretch; gap:44px">
+        <div class="card on">
+          <div class="kicker">Controlled comparison</div>
+          <h3>One view vs two views</h3>
+          <p style="margin-top:14px">AP only vs AP + LAT. Same architecture, same iterations, same split, same seeds. 2–3 seeds per arm, so the difference comes with a spread.</p>
+          <p style="margin-top:18px; color:var(--text)">How much does the second X-ray actually buy?</p>
+        </div>
+        <div class="card fragment rise">
+          <div class="kicker" style="color:var(--warm)">Second comparison</div>
+          <h3>Robustness or data size</h3>
+          <p style="margin-top:14px">Tilt the lateral view to 91–100° (real X-rays are never perfectly orthogonal), or train on 100 vs 400 volumes.</p>
+          <p style="margin-top:18px; color:var(--text)">How fragile is it, and is more data the cheapest win?</p>
+        </div>
+      </div>
+      <p class="lede fragment rise" style="margin-top:40px !important">The split is fixed in week 1, by patient, and never changed.</p>
+    </div>
+  </div>
+  <aside class="notes"><div class="notes-he">
+    <p><b>🎤 אדיר · כ-35 שניות</b></p>
+    <p>הניסוי המבוקר: תצפית אחת מול שתיים. אותה ארכיטקטורה, אותו מספר איטרציות, אותה חלוקה ואותם seeds. מריצים 2 עד 3 seeds לכל צד, כדי שלהפרש יהיה פיזור ולא מספר בודד. השאלה: כמה באמת שווה הצילום השני?</p>
+    <p>(קליק) השוואה שנייה, כנדרש לזוג: או להטות את הצילום הצדי ל-91 עד 100 מעלות, כי בעולם האמיתי הוא אף פעם לא ניצב מושלם, או לאמן על 100 מול 400 נפחים.</p>
+    <p>(קליק) והחלוקה לאימון ובדיקה נקבעת בשבוע הראשון, לפי מטופל, ולא משתנה. ככה אין דליפת נתונים.</p>
+  </div></aside>
+</section>
+
+<!-- 12 · EVALUATION ------------------------------------------------------ -->
+<section>
+  <div class="frame">
+    <div class="kicker"><span class="n">11</span> Evaluation</div>
+    <h2>Dice can be near-perfect while the <span class="hl">clinical angle</span> is wrong.</h2>
+    <div class="body" style="top:290px">
+      <div class="cols" style="grid-template-columns: 380px 380px 1fr; gap:36px; align-items:center">
+        <div class="media">
+          <img src="img/ce_gt.png" alt="True hip joint">
+          <svg viewBox="0 0 1 1" style="position:absolute;inset:0;width:100%;height:100%">
+            <line x1="0.505" y1="0.555" x2="0.505" y2="0.25" stroke="#e9f1ff" stroke-width="0.006" stroke-dasharray="0.02 0.015"/>
+            <line x1="0.505" y1="0.555" x2="0.645" y2="0.395" stroke="#7dffb0" stroke-width="0.009"/>
+            <circle cx="0.645" cy="0.395" r="0.014" fill="#7dffb0"/>
+          </svg>
+          <span class="tag" style="top:auto;bottom:14px">true · CE 41°</span>
+        </div>
+        <div class="media">
+          <img src="img/ce_rim.png" alt="Hip joint with a sliver of rim removed">
+          <svg viewBox="0 0 1 1" style="position:absolute;inset:0;width:100%;height:100%">
+            <line x1="0.505" y1="0.555" x2="0.505" y2="0.25" stroke="#e9f1ff" stroke-width="0.006" stroke-dasharray="0.02 0.015"/>
+            <line x1="0.505" y1="0.555" x2="0.605" y2="0.385" stroke="#ff8a94" stroke-width="0.009"/>
+            <circle cx="0.605" cy="0.385" r="0.014" fill="#ff8a94"/>
+          </svg>
+          <span class="tag" style="top:auto;bottom:14px;color:var(--bad)">rim shaved · CE 30°</span>
+        </div>
+        <div>
+          <div class="cols" style="grid-template-columns:1fr 1fr; gap:26px">
+            <div><div class="stat ok">0.999</div><div class="stat-l">Dice</div></div>
+            <div><div class="stat ok">0 mm</div><div class="stat-l">HD95</div></div>
+            <div style="grid-column: span 2"><div class="stat hl">41° → 30°</div><div class="stat-l">centre-edge angle, after removing 3 cm³ (0.2 % of the bone)</div></div>
+          </div>
+        </div>
+      </div>
+      <p class="lede fragment rise" style="margin-top:36px !important; font-size:30px">So we report Dice, HD95, ASSD, Chamfer and NSD <b style="color:var(--text)">plus one clinical angle</b>, and check whether they agree.</p>
+      <p class="foot">Hero pelvis s1390. Simplified CE angle in one coronal slice through the femoral-head centre. Coronal slice shown; red = removed rim.</p>
+    </div>
+  </div>
+  <aside class="notes"><div class="notes-he">
+    <p><b>🎤 אדיר · כ-45 שניות</b></p>
+    <p>איך מודדים שחזור? המדד הסטנדרטי הוא Dice, חפיפה בין הצורות. אבל הנה ניסוי שעשינו: לקחנו את האגן האמיתי וגילחנו רק שפה קטנה של שקע הירך, שלושה סנטימטרים מעוקבים, בערך שתי עשיריות האחוז מהעצם.</p>
+    <p>ה-Dice: 0.999. ה-HD95: אפס. כמעט מושלם. אבל זווית ה-CE, זווית שרופאים משתמשים בה לאבחון של כיסוי ראש הירך, ירדה מ-41 ל-30 מעלות. (זו גרסה פשוטה של הזווית, בפרוסה אחת.)</p>
+    <p>(קליק) לכן נדווח את כל המדדים הגאומטריים וגם זווית קלינית אחת, ונבדוק אם הם מסכימים זה עם זה. ה-benchmark מ-2023 טוען שלא תמיד, ואנחנו רוצים לבדוק את זה בעצמנו.</p>
+  </div></aside>
+</section>
+
+<!-- 13 · NOVELTY --------------------------------------------------------- -->
+<section>
+  <div class="frame">
+    <div class="kicker"><span class="n">12</span> What's new</div>
+    <h2>A <span class="hl">measured</span> sim-to-real gap, not “looks plausible”.</h2>
+    <div class="body" style="top:290px">
+      <div class="cols c3" style="align-items:stretch; gap:34px">
+        <div class="card warm">
+          <div class="stat hl" style="font-size:64px">Real X-rays</div>
+          <p style="margin-top:18px">Key papers (X2CT-GAN, PerX2CT) evaluate real radiographs only qualitatively: no paired ground truth. DeepFluoro has real fluoroscopy <b style="color:var(--text)">and</b> CT, so we can put a number on the gap.</p>
+        </div>
+        <div class="card fragment rise">
+          <div class="stat x" style="font-size:64px">Memorisation floor</div>
+          <p style="margin-top:18px">None of the papers we read report a nearest-neighbour baseline. We report it next to the network.</p>
+        </div>
+        <div class="card fragment rise">
+          <div class="stat ok" style="font-size:64px">Dice vs angle</div>
+          <p style="margin-top:18px">Test the published claim that better Dice doesn't always mean better clinical parameters, on our own models.</p>
+        </div>
+      </div>
+      <p class="foot">Why the gap matters: on vertebrae, a 2025 study measured 29.45 dB on simulated vs 23.22 dB on real X-rays (IXGS, Sci. Rep.). "Not found" = from a systematic search, not proof of absence.</p>
+    </div>
+  </div>
+  <aside class="notes"><div class="notes-he">
+    <p><b>🎤 נועה · כ-45 שניות</b></p>
+    <p>מה חדש אצלנו? שלושה דברים.</p>
+    <p>הראשון והעיקרי: המאמרים המרכזיים בתחום בודקים צילומים אמיתיים רק איכותית, "נראה סביר", כי אין להם תשובה נכונה לצילום אמיתי. ל-DeepFluoro יש גם פלואורוסקופיה אמיתית וגם CT, אז אנחנו יכולים למדוד את הפער במספר. ומחקר מ-2025 על חוליות מראה שהפער הזה גדול.</p>
+    <p>(קליק) שני: רצפת השינון. לא ראינו מאמר שמדווח על baseline של שכן קרוב, ואנחנו נדווח אותו לצד הרשת.</p>
+    <p>(קליק) שלישי: נבדוק בעצמנו האם Dice והזווית הקלינית מסכימים.</p>
+  </div></aside>
+</section>
+
+<!-- 14 · RISKS ----------------------------------------------------------- -->
+<section>
+  <div class="frame">
+    <div class="kicker"><span class="n">13</span> Risks</div>
+    <h2>What could go wrong, and the plan for each.</h2>
+    <div class="body" style="top:260px">
+      <table class="tbl">
+        <thead><tr><th style="width:30%">Risk</th><th>Mitigation</th></tr></thead>
+        <tbody>
+          <tr><td>Few usable pelvises</td><td>27 of 102 in the subset. Screen the full 1,228 on Kaggle; augmentation; fall back to VerSe vertebrae if needed.</td></tr>
+          <tr class="fragment rise"><td>C-arm geometry ≠ AP/LAT</td><td>Render training DRRs with DeepFluoro's camera intrinsics and poses; score only the visible field; report what's left as part of the gap.</td></tr>
+          <tr class="fragment rise"><td>Label noise</td><td>TotalSegmentator masks are partly model-generated. Inspect the 10 worst cases: label error or model error?</td></tr>
+          <tr class="fragment rise"><td>Invented anatomy</td><td>No GAN. Re-project the prediction with DiffDRR and compare it to the input silhouette.</td></tr>
+          <tr class="fragment rise"><td>Free GPU limits</td><td>Runs under 4 hours, checkpoints to Drive; Colab for debugging, Kaggle for long runs.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <aside class="notes"><div class="notes-he">
+    <p><b>🎤 נועה · כ-40 שניות</b></p>
+    <p>הסיכונים העיקריים. ראשון: מעט אגנים שמישים, ראינו 27 מתוך 102. הפתרון: סינון של המאגר המלא ב-Kaggle, אוגמנטציות, ובמקרה הגרוע מעבר לחוליות מ-VerSe.</p>
+    <p>(קליק) שני: צילומי C-arm אמיתיים לא נראים כמו AP ולטרל מושלמים. נרנדר את צילומי האימון עם הפרמטרים של המצלמה של DeepFluoro.</p>
+    <p>(קליק) שלישי: רעש בתוויות, ונבדוק את עשרת המקרים הגרועים. (קליק) רביעי: אנטומיה מומצאת, ולכן בלי GAN, ונטיל את התחזית בחזרה לבדיקה. (קליק) ואחרון: מגבלות GPU חינמי, אז ריצות קצרות ו-checkpoints.</p>
+  </div></aside>
+</section>
+
+<!-- 15 · PLAN ------------------------------------------------------------ -->
+<section>
+  <div class="frame">
+    <div class="kicker"><span class="n">14</span> Plan</div>
+    <h2>Eight weeks, each of us owns a deliverable every week.</h2>
+    <div class="body" style="top:270px">
+      <div class="tline">
+        <div></div><div class="wk">W1</div><div class="wk">W2</div><div class="wk">W3</div><div class="wk">W4</div><div class="wk">W5</div><div class="wk">W6</div><div class="wk">W7</div><div class="wk">W8</div>
+        <div class="row">Data &amp; DRR</div><div class="seg b" style="grid-column: span 2">NIfTI, DRRs, split, Kaggle crop</div><div style="grid-column: span 6"></div>
+        <div class="row">Metrics</div><div></div><div class="seg n">Metrics</div><div style="grid-column: span 6"></div>
+        <div class="row">Baselines</div><div style="grid-column: span 2"></div><div class="seg b">NN · hull</div><div style="grid-column: span 5"></div>
+        <div class="row">Network</div><div style="grid-column: span 3"></div><div class="seg b" style="grid-column: span 2">2D→3D U-Net, full runs</div><div style="grid-column: span 3"></div>
+        <div class="row">Experiments</div><div style="grid-column: span 5"></div><div class="seg b">1 vs 2 views</div><div style="grid-column: span 2"></div>
+        <div class="row">Error analysis</div><div style="grid-column: span 6"></div><div class="seg b">Real X-ray gap</div><div></div>
+        <div class="row">Report &amp; demo</div><div style="grid-column: span 7"></div><div class="seg b">submit</div>
+      </div>
+      <div class="legend"><span style="--c: rgba(127,208,255,.85)">Adir</span><span style="--c: rgba(255,207,127,.88)">Noa</span><span style="--c: linear-gradient(90deg, rgba(127,208,255,.85), rgba(255,207,127,.88))">split between us, one deliverable each</span></div>
+    </div>
+  </div>
+  <aside class="notes"><div class="notes-he">
+    <p><b>🎤 נועה · כ-35 שניות</b></p>
+    <p>התוכנית לשמונה שבועות, לפי השלבים שהמרצה הגדיר. שבועיים לנתונים ול-DRR, מדדים בשבוע 2, baselines בשבוע 3, הרשת בשבועות 4 ו-5, ניסויים בשבוע 6, ניתוח שגיאות ו-DeepFluoro בשבוע 7, ובשבוע 8 דוח והדגמה.</p>
+    <p>העיקרון: בכל שבוע לכל אחד מאיתנו יש תוצר משלו. למשל בשבוע 3 אדיר עושה את השכן הקרוב ואני את ה-visual hull. ככה התרומה האישית מתועדת מעצמה.</p>
+  </div></aside>
+</section>
+
+<!-- 16 · CLOSE ----------------------------------------------------------- -->
+<section>
+  <video class="hero-vid far" src="media/hero.mp4" poster="media/hero.jpg" muted loop playsinline data-autoplay></video>
+  <img class="print-only hero-vid far" src="media/hero.jpg">
+  <div class="scrim"></div>
+  <div class="title-wrap" style="bottom:140px">
+    <div class="kicker">In one line each</div>
+    <ul class="bul" style="max-width:1000px">
+      <li><b>Problem:</b> 3D bone from two X-rays, an ill-posed inverse problem.</li>
+      <li><b>Method:</b> a 2D→3D U-Net that learns the pelvis shape prior.</li>
+      <li><b>Bar to beat:</b> nearest neighbour, Dice 0.57 (measured).</li>
+      <li><b>New:</b> a measured gap on real fluoroscopy.</li>
+    </ul>
+    <h1 style="margin-top:56px; font-size:96px">Questions?</h1>
+    <div class="names"><span><b>Adir Buskila</b></span><span><b>Noa Zadok</b></span><span class="mono" style="font-size:22px">github.com/AdirBuskila/pelvis-xray-3d</span></div>
+  </div>
+  <aside class="notes"><div class="notes-he">
+    <p><b>🎤 אדיר ונועה · כ-25 שניות</b></p>
+    <p><b>אדיר:</b> לסיכום: הבעיה היא שחזור עצם תלת-ממדית משני צילומים, בעיה הפוכה בלי פתרון יחיד. השיטה: רשת שלומדת את הצורה של האגן.</p>
+    <p><b>נועה:</b> היעד מדוד כבר עכשיו: לעבור את השכן הקרוב, 0.57. והחידוש: מספר אמיתי לפער על רנטגן אמיתי.</p>
+    <p><b>שניכם:</b> תודה, נשמח לשאלות.</p>
+    <hr>
+    <p><b>שאלות צפויות:</b></p>
+    <p>• "למה 64 בשלישית?" — מתאים ל-GPU חינמי ולזמן של פרויקט; קובייה היא כ-5 מ"מ, מספיק לצורה הכללית אבל לא לפרטים דקים.</p>
+    <p>• "למה לא GAN או דיפוזיה?" — ממציאים אנטומיה, ושיטות הדיפוזיה דורשות כרטיסים של 80 GB או שאין להן קוד.</p>
+    <p>• "כמה נתונים?" — 27 נקיים בתת-הקבוצה; במאגר המלא צפויות כמה מאות, נדע אחרי הסינון.</p>
+    <p>• "מה אם DeepFluoro לא עובד?" — הפרויקט עומד גם על הניסוי המבוקר; יש גם Flepp 2025 כגיבוי.</p>
+  </div></aside>
+</section>
+
+</div></div>
+
+<script src="vendor/reveal/reveal.js"></script>
+<script src="vendor/reveal/notes/notes.js"></script>
+<script>
+  const shot = new URLSearchParams(location.search).has("shot"); // screenshot mode: all fragments shown
+  Reveal.initialize({
+    fragments: !shot,
+    width: 1920, height: 1080, margin: 0, minScale: 0.2, maxScale: 2,
+    hash: true, controls: false, progress: true, slideNumber: "c/t", center: false,
+    transition: "fade", transitionSpeed: "default", backgroundTransition: "fade",
+    autoPlayMedia: null, pdfSeparateFragments: false, showNotes: false,
+    plugins: [RevealNotes],
+  });
+</script>
+</body>
+</html>

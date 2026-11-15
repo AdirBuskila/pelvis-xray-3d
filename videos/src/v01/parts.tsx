@@ -69,14 +69,16 @@ export function VolumeSlice({ vol, lab, box, axis, at, size, opacity = 1, labMix
   uniforms.bmin.value.set(...box.bmin); uniforms.bmax.value.set(...box.bmax);
   uniforms.opacity.value = opacity; uniforms.labMix.value = labMix; uniforms.gain.value = gain;
   uniforms.tint.value.set(...tint);
+  // material built once with these uniforms and flagged every frame (a `uniforms` prop freezes in full renders)
+  const mat = useMemo(() => new THREE.ShaderMaterial({ ...sliceShader, uniforms, transparent: true, side: THREE.DoubleSide, depthWrite: false, toneMapped: false }), [uniforms]);
+  mat.uniformsNeedUpdate = true;
   if (opacity <= 0.001) return null;
   const c = box.bmin.map((v, i) => (v + box.bmax[i]) / 2);
   const pos: [number, number, number] = axis === "axial" ? [c[0], at, c[2]] : axis === "coronal" ? [c[0], c[1], at] : [at, c[1], c[2]];
   const rot: [number, number, number] = axis === "axial" ? [-Math.PI / 2, 0, 0] : axis === "coronal" ? [0, 0, 0] : [0, Math.PI / 2, 0];
   return (
-    <mesh position={pos} rotation={rot}>
+    <mesh position={pos} rotation={rot} material={mat}>
       <planeGeometry args={[size[0] * 1.02, size[1] * 1.02]} />
-      <shaderMaterial args={[sliceShader]} uniforms={uniforms} transparent side={THREE.DoubleSide} depthWrite={false} toneMapped={false} />
     </mesh>
   );
 }

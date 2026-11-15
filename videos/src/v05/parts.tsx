@@ -99,11 +99,13 @@ export function SdfPlane({ tex, level = 0, opacity = 1, R, size, position }: {
   const uniforms = useMemo(() => ({ map: { value: tex }, level: { value: 0 }, opacity: { value: 1 }, R: { value: R } }), [tex, R]);
   uniforms.level.value = level;
   uniforms.opacity.value = opacity;
+  // material built once with these uniforms and flagged every frame (a `uniforms` prop freezes in full renders)
+  const mat = useMemo(() => new THREE.ShaderMaterial({ ...sdfShader, uniforms, transparent: true, side: THREE.DoubleSide, depthWrite: false, toneMapped: false }), [uniforms]);
+  mat.uniformsNeedUpdate = true;
   if (opacity <= 0.001) return null;
   return (
-    <mesh position={position} rotation={[0, Math.PI, 0]}>
+    <mesh position={position} rotation={[0, Math.PI, 0]} material={mat}>
       <planeGeometry args={size} />
-      <shaderMaterial args={[sdfShader]} uniforms={uniforms} transparent side={THREE.DoubleSide} depthWrite={false} toneMapped={false} />
     </mesh>
   );
 }

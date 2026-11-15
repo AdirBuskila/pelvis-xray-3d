@@ -36,18 +36,21 @@ export function Detector({ tex, progress = 1, opacity = 1, size, position, rotat
   tex: THREE.Texture; progress?: number; opacity?: number; size: [number, number];
   position: [number, number, number]; rotation?: [number, number, number]; flipX?: boolean;
 }) {
-  const uniforms = useMemo(() => ({ map: { value: tex }, progress: { value: 0 }, opacity: { value: 1 }, flipX: { value: 0 } }), [tex]);
-  uniforms.progress.value = progress;
-  uniforms.opacity.value = opacity;
-  uniforms.flipX.value = flipX ? 1 : 0;
+  // One material per detector, built once; its uniforms are written directly every frame.
+  // (Passing a `uniforms` prop to <shaderMaterial> froze the values at the first frame of a full render,
+  // so the detectors stayed empty in rendered videos while single stills looked fine.)
+  const mat = useMemo(() => new THREE.ShaderMaterial({
+    ...detectorShader, transparent: true, side: THREE.DoubleSide, depthWrite: false, toneMapped: false,
+    uniforms: { map: { value: tex }, progress: { value: 0 }, opacity: { value: 1 }, flipX: { value: 0 } },
+  }), [tex]);
+  mat.uniforms.progress.value = progress;
+  mat.uniforms.opacity.value = opacity;
+  mat.uniforms.flipX.value = flipX ? 1 : 0;
+  mat.uniformsNeedUpdate = true;
   const edges = useMemo(() => new THREE.EdgesGeometry(new THREE.PlaneGeometry(size[0] * 1.02, size[1] * 1.02)), [size[0], size[1]]);
-  if (opacity <= 0.001) return null;
   return (
-    <group position={position} rotation={rotation}>
-      <mesh>
-        <planeGeometry args={size} />
-        <shaderMaterial args={[detectorShader]} uniforms={uniforms} transparent side={THREE.DoubleSide} toneMapped={false} depthWrite={false} />
-      </mesh>
+    <group position={position} rotation={rotation} visible={opacity > 0.001}>
+      <mesh material={mat}><planeGeometry args={size} /></mesh>
       <lineSegments geometry={edges}>
         <lineBasicMaterial color={new THREE.Color(0.45, 0.75, 1.0)} transparent opacity={0.6 * opacity} toneMapped={false} />
       </lineSegments>

@@ -29,3 +29,7 @@ videos/public/data/df_*/
 videos/bundle/
 videos/plan.json
 videos/entries/
+
+# presentation: vendor/ holds the offline copies; node_modules and the exported PDF stay local
+presentation/node_modules/
+presentation/deck.pdf
