@@ -1,0 +1,32 @@
+# Licence guard: unit 07's notebook works on DeepFluoro (CC BY-NC-ND 4.0: no redistribution, no derivatives).
+# Its cell outputs would hold DeepFluoro frames and per-specimen numbers, so the notebook may only be committed
+# with every output cleared (Kernel -> Restart & Clear All Outputs, then save). This job fails if any cell has one.
+name: licence-check
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  no-deepfluoro-outputs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # ubuntu-latest ships python3; only the standard library (json) is used, nothing to install
+      - name: unit 07 notebook has no cell outputs
+        run: |
+          python3 - <<'EOF'
+          import json, pathlib, sys
+          nb_path = pathlib.Path("units/07-sim-vs-real/notebook.ipynb")
+          if not nb_path.exists():                 # nothing to check (e.g. a branch without unit 07)
+              print(f"{nb_path} not found: skipped")
+              sys.exit(0)
+          nb = json.loads(nb_path.read_text(encoding="utf-8"))
+          # a code cell's "outputs" holds printed text, figures and errors; it must be empty in every cell
+          bad = [i for i, c in enumerate(nb["cells"]) if c.get("outputs")]
+          if bad:
+              print(f"{nb_path}: cells {bad} have outputs. DeepFluoro is CC BY-NC-ND: nothing derived from it may be "
+                    "committed. Clear all outputs (Kernel -> Restart & Clear All Outputs), save, commit again.")
+              sys.exit(1)
+          print(f"{nb_path}: {len(nb['cells'])} cells, no outputs: OK")
+          EOF

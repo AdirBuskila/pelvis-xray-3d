@@ -1,0 +1,35 @@
+# Installable so every notebook (local, Colab, Kaggle) can `import xray3d`.
+# Local:  python -m pip install -e .        Cloud: the notebook's setup cell does it.
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "xray3d"
+version = "0.1.0"
+description = "Reconstructing the 3D pelvis from two X-rays (HIT course project, Adir Buskila and Noa Zadok)"
+requires-python = ">=3.10"
+dependencies = [
+  "numpy>=1.24",
+  "scipy>=1.10",
+  "nibabel>=5.0",      # reads NIfTI (.nii.gz), the format of TotalSegmentator CTs and masks
+  "matplotlib>=3.7",
+  "scikit-image>=0.21",  # marching cubes (unit 02)
+  "pytest>=7",
+]
+
+[project.optional-dependencies]
+# DiffDRR (perspective DRRs, differentiable). Heavy (torch + torchio): install on Colab/Kaggle,
+# or locally with  python -m pip install -e ".[drr]"
+drr = ["diffdrr>=0.5"]
+# the network (units 04-08). Colab and Kaggle already have torch; locally Anaconda has a CPU build.
+nn = ["torch>=2.1"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+# every unit has a file called test_unit.py; importlib mode lets them share the name
+addopts = "--import-mode=importlib -q"
+pythonpath = ["src"]   # always test THIS checkout's src/xray3d, even if another copy is installed
+testpaths = ["units"]
