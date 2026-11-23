@@ -48,6 +48,12 @@
   .netd .blk .t { font-family: var(--head); font-weight: 600; font-size: 30px; }
   .netd .blk .s { font-size: 21px; color: var(--dim); margin-top: 6px; line-height: 1.3; }
   .netd .ar { color: var(--xray); font-size: 30px; }
+  /* inside-the-network diagram: a signal pulse runs through the blocks, data flows along the lifts */
+  .net > svg { overflow: visible; }
+  .net .flow { stroke-dasharray: 5 13; animation: netflow 1.1s linear infinite; }
+  @keyframes netflow { to { stroke-dashoffset: -36; } }
+  .net .blk { animation: netpulse 3.6s ease-in-out infinite; animation-delay: var(--d); }
+  @keyframes netpulse { 0%, 30%, 100% { filter: none; } 10% { filter: drop-shadow(0 0 14px var(--c)) brightness(1.5); } }
   .netd .blk.hot { border-color: rgba(255,207,127,.55); box-shadow: 0 0 30px rgba(255,207,127,.10) inset; }
 </style>
 </head>
@@ -66,7 +72,7 @@
     <div class="names"><span><b>Adir Buskila</b></span><span><b>Noa Zadok</b></span><span>HIT · 2026</span></div>
   </div>
   <aside class="notes"><div class="notes-he">
-    <p><b>שקופית 1/18 · פתיחה · 🎤 אדיר · ~15 שנ׳ · בלי לחיצות</b></p>
+    <p><b>שקופית 1/19 · פתיחה · 🎤 אדיר · ~15 שנ׳ · בלי לחיצות</b></p>
     <p>שלום שוב. בפעם הקודמת הצגנו תוכנית, היום תוצאות. השורה התחתונה: Dice של 0.815 על 55 אגנים שהרשת לא ראתה.</p>
     <p>⏭ <b>עוברים לשקופית הבאה</b></p>
   </div></aside>
@@ -90,7 +96,7 @@
     </div>
   </div>
   <aside class="notes"><div class="notes-he">
-    <p><b>שקופית 2/18 · תזכורת · 🎤 אדיר · ~15 שנ׳ · בלי לחיצות</b></p>
+    <p><b>שקופית 2/19 · תזכורת · 🎤 אדיר · ~15 שנ׳ · בלי לחיצות</b></p>
     <p>תזכורת: מ-CT אמיתי מייצרים צילום מקדימה ומהצד, והרשת מחזירה קובייה של 64³, כל ווקסל 5 מ"מ. התשובה הנכונה תמיד ידועה.</p>
     <p>⏭ <b>עוברים לשקופית הבאה</b> · מעבירים לנועה</p>
   </div></aside>
@@ -111,7 +117,7 @@
     </div>
   </div>
   <aside class="notes"><div class="notes-he">
-    <p><b>שקופית 3/18 · סינון הנתונים · 🎤 נועה · ~30 שנ׳ · 5 לחיצות</b></p>
+    <p><b>שקופית 3/19 · סינון הנתונים · 🎤 נועה · ~30 שנ׳ · 5 לחיצות</b></p>
     <p>סיננו את כל 1,228 הסריקות. כל קובייה בסרטון היא סריקה אחת.</p>
     <p>▶ <b>לחיצה 1:</b> 264 שמישות,</p>
     <p>▶ <b>לחיצה 2:</b> 15 רחבות מדי,</p>
@@ -142,7 +148,7 @@
     </div>
   </div>
   <aside class="notes"><div class="notes-he">
-    <p><b>שקופית 4/18 · למה הורדנו · 🎤 נועה · ~20 שנ׳ · 4 לחיצות</b></p>
+    <p><b>שקופית 4/19 · למה הורדנו · 🎤 נועה · ~20 שנ׳ · 4 לחיצות</b></p>
     <p>כל כלל שומר על התשובה הנכונה. בלי אגן אין מטרה.</p>
     <p>▶ <b>לחיצה 1:</b> אגן חתוך: הרשת תיענש על עצם שבאמת קיימת.</p>
     <p>▶ <b>לחיצה 2:</b> מתכת משבשת את ה-CT.</p>
@@ -172,7 +178,7 @@
     </div>
   </div>
   <aside class="notes"><div class="notes-he">
-    <p><b>שקופית 5/18 · סט האימון · 🎤 נועה · ~25 שנ׳ · 2 לחיצות</b></p>
+    <p><b>שקופית 5/19 · סט האימון · 🎤 נועה · ~25 שנ׳ · 2 לחיצות</b></p>
     <p>179 זה מעט, אז יצרנו עותקים בתנוחות שונות, כמו בסרטון. ביחד 820 דגימות.</p>
     <p>▶ <b>לחיצה 1:</b> ועוד היפוך שמאל-ימין בזמן האימון.</p>
     <p>▶ <b>לחיצה 2:</b> ובכנות: 76 מטופלים עם מתכת היו אמורים להיכנס, ובאג דילג עליהם. זה הצעד הבא.</p>
@@ -203,9 +209,29 @@
     </div>
   </div>
   <aside class="notes"><div class="notes-he">
-    <p><b>שקופית 6/18 · הרשת · 🎤 אדיר · ~25 שנ׳ · בלי לחיצות</b></p>
-    <p>encoder דו-ממדי לכל צילום. ואז ה-lift: כל feature נמתח לאחור לאורך הקרן שלו לתוך הקובייה. decoder תלת-ממדי מוציא הסתברות לעצם בכל ווקסל.</p>
-    <p>680 אלף פרמטרים, כ-40 דקות אימון על T4. תזכרו את ה-lift, נחזור אליו.</p>
+    <p><b>שקופית 6/19 · הרשת · 🎤 אדיר · ~20 שנ׳ · בלי לחיצות</b></p>
+    <p>הרשת בשלושה חלקים: encoder דו-ממדי לכל צילום, lift לתוך קובייה, ו-decoder תלת-ממדי. ה-loss הוא BCE ועוד Dice, וריצה לוקחת כ-40 דקות על T4.</p>
+    <p>בשקופית הבאה נראה איך היא נראית מבפנים.</p>
+    <p>⏭ <b>עוברים לשקופית הבאה</b></p>
+  </div></aside>
+</section>
+
+<!-- 6b · INSIDE THE NETWORK (real layer shapes, animated) ---------------- -->
+<section>
+  <div class="frame">
+    <div class="kicker"><span class="n">05</span> Inside the network · the real layers</div>
+    <h2>Two 2D encoders read the X-rays. A 3D decoder <span class="x">builds the bone</span>.</h2>
+    <div class="body" style="top:250px">
+      <figure class="chart net" id="ch-net" style="margin:0"></figure>
+    </div>
+    <p class="foot">The final network (2 views, perspective lift), drawn from its code. Labels are channels × size. Height grows with image size, thickness with channels (log scale). Output: its prediction for the median test patient, s0252, from the two X-rays shown.</p>
+  </div>
+  <aside class="notes"><div class="notes-he">
+    <p><b>שקופית 7/19 · בתוך הרשת · 🎤 אדיר · ~40 שנ׳ · 3 לחיצות</b></p>
+    <p>ככה הרשת נראית באמת, שכבה אחרי שכבה. כל צילום עובר encoder משלו: בכל שלב התמונה קטנה פי 2 וה-channels מוכפלים, מ-128² עד 16².</p>
+    <p>▶ <b>לחיצה 1:</b> ה-lift: שלוש רמות של features נכנסות לשלוש קוביות, 16³, 32³ ו-64³. כל קובייה מקבלת גם מה-AP וגם מה-LAT. תזכרו את ה-lift, נחזור אליו.</p>
+    <p>▶ <b>לחיצה 2:</b> ה-decoder מגדיל את הקובייה פעמיים עד 64³, ומוציא לכל ווקסל הסתברות לעצם. מימין: התחזית האמיתית שלו למטופל החציוני.</p>
+    <p>▶ <b>לחיצה 3:</b> zoom על נוירון אחד: 3×3 פיקסלים כפול כל ה-channels, סכום משוקלל ואז ReLU. בסך הכל 679 אלף משקולות, 87% מהן ב-encoders.</p>
     <p>⏭ <b>עוברים לשקופית הבאה</b></p>
   </div></aside>
 </section>
@@ -230,7 +256,7 @@
     </div>
   </div>
   <aside class="notes"><div class="notes-he">
-    <p><b>שקופית 7/18 · ריצה ראשונה · 🎤 אדיר · ~25 שנ׳ · 3 לחיצות</b></p>
+    <p><b>שקופית 8/19 · ריצה ראשונה · 🎤 אדיר · ~25 שנ׳ · 3 לחיצות</b></p>
     <p>ריצה ראשונה, 14 אגנים: ה-loss יורד כמעט לאפס, וה-Dice על ה-validation תקוע. הרשת שיננה.</p>
     <p>▶ <b>לחיצה 1:</b> (קו ירוק) אותה רשת על 179 אגנים ממשיכה להשתפר.</p>
     <p>▶ <b>לחיצה 2:</b> ב-test: מ-0.62 ל-0.76.</p>
@@ -250,7 +276,7 @@
     </div>
   </div>
   <aside class="notes"><div class="notes-he">
-    <p><b>שקופית 8/18 · חמישה סבבים · 🎤 אדיר · ~25 שנ׳ · 7 לחיצות</b></p>
+    <p><b>שקופית 9/19 · חמישה סבבים · 🎤 אדיר · ~25 שנ׳ · 7 לחיצות</b></p>
     <p>כל עמודה היא שינוי אחד. לחיצה לכל עמודה:</p>
     <p>▶ <b>לחיצה 1:</b> כל הנתונים: הקפיצה הגדולה, פלוס 0.14.</p>
     <p>▶ <b>לחיצה 2:</b> היפוך שמאל-ימין.</p>
@@ -282,7 +308,7 @@
     </div>
   </div>
   <aside class="notes"><div class="notes-he">
-    <p><b>שקופית 9/18 · צילום אחד מול שניים · 🎤 אדיר · ~25 שנ׳ · לחיצה אחת</b></p>
+    <p><b>שקופית 10/19 · צילום אחד מול שניים · 🎤 אדיר · ~25 שנ׳ · לחיצה אחת</b></p>
     <p>הניסוי המבוקר: הכל זהה חוץ ממספר הצילומים. הצילום הצדי מוסיף 0.045 Dice, רווח הסמך לא כולל אפס, ועוזר ל-51 מתוך 55 מטופלים.</p>
     <p>▶ <b>לחיצה 1:</b> הפתעה: עם צילום אחד הרשת לא למדה בכלל, כי אין לה מידע על העומק. הוספת קואורדינטות לכל ווקסל, CoordConv, פתרה את זה.</p>
     <p>⏭ <b>עוברים לשקופית הבאה</b></p>
@@ -309,7 +335,7 @@
     </div>
   </div>
   <aside class="notes"><div class="notes-he">
-    <p><b>שקופית 10/18 · מה לא עזר · 🎤 אדיר · ~20 שנ׳ · לחיצה אחת</b></p>
+    <p><b>שקופית 11/19 · מה לא עזר · 🎤 אדיר · ~20 שנ׳ · לחיצה אחת</b></p>
     <p>מה שלא עזר: learning-rate schedule, אימון כפול, weight decay, ניקוי חתיכות. הכל בתוך הרעש.</p>
     <p>▶ <b>לחיצה 1:</b> הרעש בין seeds הוא ±0.005, אז הבדל של פחות מ-0.01 הוא לא תוצאה.</p>
     <p>⏭ <b>עוברים לשקופית הבאה</b> · מעבירים לנועה</p>
@@ -332,7 +358,7 @@
     </div>
   </div>
   <aside class="notes"><div class="notes-he">
-    <p><b>שקופית 11/18 · מה מגביל · 🎤 נועה · ~35 שנ׳ · 4 לחיצות</b></p>
+    <p><b>שקופית 12/19 · מה מגביל · 🎤 נועה · ~35 שנ׳ · 4 לחיצות</b></p>
     <p>לפני עוד אימון שאלנו מה מגביל. A: אגן מושלם שזז ווקסל אחד מקבל 0.79. הרזולוציה מגבילה.</p>
     <p>▶ <b>לחיצה 1:</b> B: 0.90 באימון מול 0.80 ב-test. עדיין משננת.</p>
     <p>▶ <b>לחיצה 2:</b> C: רק 2 חריגים מתוך 55.</p>
@@ -362,7 +388,7 @@
     </div>
   </div>
   <aside class="notes"><div class="notes-he">
-    <p><b>שקופית 12/18 · התיקון · 🎤 נועה · ~30 שנ׳ · 2 לחיצות</b></p>
+    <p><b>שקופית 13/19 · התיקון · 🎤 נועה · ~30 שנ׳ · 2 לחיצות</b></p>
     <p>קרני רנטגן יוצאות מנקודה אחת ומתפזרות, בכחול. ה-lift הישן הניח קרניים מקבילות, בכתום. זה נכון רק בעומק אחד.</p>
     <p>▶ <b>לחיצה 1:</b> התיקון: מטילים כל ווקסל דרך מודל ה-pinhole האמיתי, משבועות 9–10.</p>
     <p>▶ <b>לחיצה 2:</b> בדיקה: הישן מכסה 67–74% מהאגן, החדש 100%.</p>
@@ -394,7 +420,7 @@
     </div>
   </div>
   <aside class="notes"><div class="notes-he">
-    <p><b>שקופית 13/18 · ישן מול חדש · 🎤 נועה · ~20 שנ׳ · לחיצה אחת</b></p>
+    <p><b>שקופית 14/19 · ישן מול חדש · 🎤 נועה · ~20 שנ׳ · לחיצה אחת</b></p>
     <p>אותם נתונים ואותם seeds, רק ה-lift שונה. כל seed השתפר: פלוס 0.007, ורווח הסמך לא כולל אפס. ה-ensemble החדש: 0.815.</p>
     <p>▶ <b>לחיצה 1:</b> אמיתי, אבל קטן: הרשת כבר למדה לתקן את הטעות בעצמה.</p>
     <p>⏭ <b>עוברים לשקופית הבאה</b></p>
@@ -422,7 +448,7 @@
     </div>
   </div>
   <aside class="notes"><div class="notes-he">
-    <p><b>שקופית 14/18 · המודל הסופי · 🎤 נועה · ~20 שנ׳ · בלי לחיצות</b></p>
+    <p><b>שקופית 15/19 · המודל הסופי · 🎤 נועה · ~20 שנ׳ · בלי לחיצות</b></p>
     <p>המודל הסופי על מטופל חציוני. ירוק קרוב לאמת, אדום רחוק. תנו לסרטון לרוץ.</p>
     <p>על 55 מטופלים: Dice 0.815, HD95 של 7.1 מ"מ, כווקסל וחצי. 53 מתוך 55 מעל 0.70.</p>
     <p>⏭ <b>עוברים לשקופית הבאה</b></p>
@@ -443,7 +469,7 @@
     <p class="foot">Colour: distance from the predicted surface to the true one (green 0, orange 5 mm, red ≥ 15 mm). Grey ghost: the true pelvis. Inputs below each: its AP and lateral X-ray.</p>
   </div>
   <aside class="notes"><div class="notes-he">
-    <p><b>שקופית 15/18 · הכי טוב, חציוני, הכי גרוע · 🎤 נועה · ~20 שנ׳ · בלי לחיצות</b></p>
+    <p><b>שקופית 16/19 · הכי טוב, חציוני, הכי גרוע · 🎤 נועה · ~20 שנ׳ · בלי לחיצות</b></p>
     <p>רוב הטעויות עד ווקסל אחד. הכי גרוע, 0.39: מטופל גדול מאוד, הגוף רחב מהגלאי. זו בעיה של נתונים, לא של השיטה.</p>
     <p>⏭ <b>עוברים לשקופית הבאה</b> · מעבירים לאדיר</p>
   </div></aside>
@@ -460,7 +486,7 @@
     </div>
   </div>
   <aside class="notes"><div class="notes-he">
-    <p><b>שקופית 16/18 · מול ה-baselines · 🎤 אדיר · ~25 שנ׳ · 3 לחיצות</b></p>
+    <p><b>שקופית 17/19 · מול ה-baselines · 🎤 אדיר · ~25 שנ׳ · 3 לחיצות</b></p>
     <p>מול הרף מההצעה: השכן הקרוב 0.57, והאגן הכי טוב במאגר 0.68.</p>
     <p>▶ <b>לחיצה 1:</b> הרשת הראשונה: 0.62.</p>
     <p>▶ <b>לחיצה 2:</b> הסופית: 0.815. כל נקודה היא מטופל, וכמעט כולם מעל 0.68. הרשת בונה צורה, לא שולפת.</p>
@@ -506,7 +532,7 @@
     </div>
   </div>
   <aside class="notes"><div class="notes-he">
-    <p><b>שקופית 17/18 · סטטוס · 🎤 אדיר · ~20 שנ׳ · בלי לחיצות</b></p>
+    <p><b>שקופית 18/19 · סטטוס · 🎤 אדיר · ~20 שנ׳ · בלי לחיצות</b></p>
     <p>עשינו: סינון מלא, baselines, הרשת, ניסוי מבוקר ותיקון ה-lift.</p>
     <p>עוד לא: רנטגן אמיתי, הזווית הקלינית, ומטופלי המתכת. הבא בתור: המתכת, ואז ווקסל של 2.5 מ"מ.</p>
     <p>⏭ <b>עוברים לשקופית הבאה</b> · הסיום, שניכם</p>
@@ -531,7 +557,7 @@
     <p class="mono" style="font-size:19px; color:var(--mute); margin-top:22px">Data: TotalSegmentator v2.0.1 (Wasserthal et al. 2023), CC BY 4.0</p>
   </div>
   <aside class="notes"><div class="notes-he">
-    <p><b>שקופית 18/18 · סיום · 🎤 אדיר ונועה · ~20 שנ׳ · בלי לחיצות</b></p>
+    <p><b>שקופית 19/19 · סיום · 🎤 אדיר ונועה · ~20 שנ׳ · בלי לחיצות</b></p>
     <p><b>נועה:</b> לסיכום: 1,228 סריקות, 264 שמישות, ו-Dice של 0.815, הרבה מעל השכן הקרוב.</p>
     <p><b>אדיר:</b> מה שעזר הכי הרבה, בכל סבב: עוד נתונים. תודה, נשמח לשאלות.</p>
     <hr><p><b>שאלות צפויות:</b></p>
@@ -716,6 +742,112 @@ const lin = (d0, d1, r0, r1) => (v) => r0 + (v - d0) / (d1 - d0) * (r1 - r0);
   const pub = el("g", { class: "fragment" }, s);
   el("line", { x1: X(0.858), x2: X(0.858), y1: 10, y2: 490, stroke: COL.good, "stroke-width": 2, "stroke-dasharray": "4 6" }, pub);
   el("text", { x: X(0.858) + 10, y: 30, class: "sub", style: `fill:${COL.good}` }, pub, "published, other data: 0.86");
+})();
+
+// ---- inside the network: the real layer shapes of XrayTo3D (2 views, perspective lift, no CoordConv) ----
+// Encoder2D: 16@128² → 32@64² → 64@32² → 128@16²; 1×1 heads give 4/8/16 ch, lifted to 64³/32³/16³ per view,
+// concatenated (8/16/32 ch); Decoder3D: 32@16³ → up → 16@32³ → up → 8@64³ → 1×1 → 1@64³ bone probability.
+(() => {
+  const s = svg("ch-net", 1800, 640, "Layer diagram of the network: two 2D encoders, lift into three 3D grids, 3D decoder");
+  const OX = 0.42, OY = -0.32;                                   // oblique depth direction
+  const S = (n) => 20 + 26 * Math.log2(n / 8);                   // drawn height for an n-pixel side (log scale)
+  const T = (c) => 4 + 4.2 * Math.log2(c / 4);                   // drawn thickness for c channels (log scale)
+  // a box: front face w×h at (x, y), extruded by d along the oblique direction; --d sets when the pulse hits it
+  function box(parent, x, y, w, h, d, col, delay) {
+    const g = el("g", { class: "blk", style: `--c:${col};--d:${delay}s` }, parent);
+    const dx = d * OX, dy = d * OY, st = { stroke: col, "stroke-width": 1.4, "stroke-linejoin": "round" };
+    el("polygon", { points: `${x},${y} ${x + w},${y} ${x + w + dx},${y + dy} ${x + dx},${y + dy}`, fill: col, "fill-opacity": 0.5, ...st }, g);
+    el("polygon", { points: `${x + w},${y} ${x + w + dx},${y + dy} ${x + w + dx},${y + h + dy} ${x + w},${y + h}`, fill: col, "fill-opacity": 0.2, ...st }, g);
+    el("rect", { x, y, width: w, height: h, fill: col, "fill-opacity": 0.32, ...st }, g);
+    return g;
+  }
+  const slab = (p, x, cy, n, c, col, delay) => {      // a 2D feature map stack: n×n image, c channels
+    const h = S(n), w = T(c), y = cy - (h + h * OY) / 2;
+    box(p, x, y, w, h, h, col, delay);
+    return { right: x + w + h * OX / 2, cy: y + (h + h * OY) / 2, bottom: y + h, x, w };
+  };
+  const cube = (p, x, cy, n, col, delay) => {         // a 3D grid of n³ voxels
+    const a = S(n) * 1.1, y = cy - (a + a * OY) / 2;
+    box(p, x, y, a, a, a, col, delay);
+    return { top: [x + a / 2 + a * OX / 2, y + a * OY / 2], bottom: [x + a / 2, y + a], right: x + a + a * OX, cy: y + (a + a * OY) / 2, x, a, y };
+  };
+  const label = (p, x, y, a, b, anchor = "middle") => {
+    el("text", { x, y, class: "lbl", "text-anchor": anchor, style: "font-size:19px" }, p, a);
+    if (b) el("text", { x, y: y + 23, class: "sub", "text-anchor": anchor, style: "font-size:16px" }, p, b);
+  };
+  const flowPath = (p, d, col) => {
+    el("path", { d, fill: "none", stroke: col, "stroke-width": 2, opacity: 0.22 }, p);
+    el("path", { d, fill: "none", stroke: col, "stroke-width": 2.4, class: "flow", opacity: 0.95 }, p);
+  };
+
+  // ---- the two encoders (one per X-ray), always visible ----
+  const rows = [["AP X-ray", "img/res_median_ap.png", 112, "ap"], ["LAT X-ray", "img/res_median_lat.png", 528, "lat"]];
+  const taps = {};
+  for (const [name, src, cy, key] of rows) {
+    el("image", { href: src, x: 0, y: cy - 55, width: 110, height: 110, preserveAspectRatio: "xMidYMid slice" }, s);
+    el("rect", { x: 0, y: cy - 55, width: 110, height: 110, rx: 6, fill: "none", stroke: COL.x, "stroke-opacity": 0.35 }, s);
+    el("text", { x: 55, y: cy - 68, class: "sub", "text-anchor": "middle", style: `fill:${COL.x}` }, s, name);
+    const st = [[1, 16, 128, 170], [2, 32, 64, 320], [3, 64, 32, 455], [4, 128, 16, 575]].map(([i, c, n, x]) =>
+      ({ ...slab(s, x, cy, n, c, COL.x, 0.15 * i), c, n }));
+    el("line", { x1: 116, x2: st[0].x - 6, y1: cy, y2: cy, stroke: COL.mute, "stroke-width": 2 }, s);
+    st.forEach((b, i) => {
+      if (i) el("line", { x1: st[i - 1].right + 6, x2: b.x - 6, y1: cy, y2: cy, stroke: COL.mute, "stroke-width": 2 }, s);
+      label(s, b.x + b.w / 2 + 6, cy + S(b.n) / 2 + 34, `${b.c} @ ${b.n}²`);
+    });
+    taps[key] = st;
+  }
+  el("text", { x: 400, y: 28, class: "sub", "text-anchor": "middle" }, s, "2D encoder: conv 3×3, each step halves the image, doubles the channels");
+
+  // ---- lift into 3D: each of the last three encoder levels feeds a 3D grid (fragment 1) ----
+  const g1 = el("g", { class: "fragment", "data-fragment-index": 0 }, s);
+  const cy3 = 320, cubes = [[16, 830], [32, 1035], [64, 1265]].map(([n, x], i) => ({ ...cube(g1, x, cy3, n, COL.warm, 0.9 + 0.35 * i), n }));
+  const chans = { 16: 32, 32: 16, 64: 8 };
+  cubes.forEach((c, i) => {
+    const lvl = 3 - i;                                             // 16³ ← level 4 (16²), 32³ ← 3, 64³ ← 2
+    for (const key of ["ap", "lat"]) {
+      const t = taps[key][lvl], [ex, ey] = key === "ap" ? c.top : c.bottom;
+      const sy = t.cy, sx = t.right + 4, bend = key === "ap" ? -110 : 110;
+      flowPath(g1, `M${sx},${sy} C${sx + (ex - sx) * 0.55},${sy} ${ex},${ey + bend} ${ex},${ey}`, COL.warm);
+    }
+    label(g1, c.x + c.a / 2 + 14, c.y + c.a + 30, `${chans[c.n]} @ ${c.n}³`, i === 0 ? "AP + LAT stacked" : "", "start");
+  });
+  el("text", { x: 735, y: cy3 - 14, class: "lbl", "text-anchor": "middle", style: `fill:${COL.warm};font-size:22px` }, g1, "lift");
+  el("text", { x: 735, y: cy3 + 12, class: "sub", "text-anchor": "middle" }, g1, "each voxel reads");
+  el("text", { x: 735, y: cy3 + 33, class: "sub", "text-anchor": "middle" }, g1, "its ray's pixel");
+
+  // ---- 3D decoder and the output (fragment 2) ----
+  const g2 = el("g", { class: "fragment", "data-fragment-index": 1 }, s);
+  const arrow = (x1, x2, y) => {
+    el("line", { x1, x2: x2 - 10, y1: y, y2: y, stroke: COL.good, "stroke-width": 3 }, g2);
+    el("polygon", { points: `${x2},${y} ${x2 - 14},${y - 7} ${x2 - 14},${y + 7}`, fill: COL.good }, g2);
+  };
+  arrow(cubes[0].right + 6, cubes[1].x - 6, cy3 + 4);
+  arrow(cubes[1].right + 6, cubes[2].x - 6, cy3 + 4);
+  el("text", { x: (cubes[0].right + cubes[1].x) / 2, y: cy3 - 12, class: "sub", "text-anchor": "middle", style: `fill:${COL.good}` }, g2, "up ×2");
+  el("text", { x: (cubes[1].right + cubes[2].x) / 2, y: cy3 - 12, class: "sub", "text-anchor": "middle", style: `fill:${COL.good}` }, g2, "up ×2");
+  const ox = 1545, oy = 175, ow = 255, oh = 255;
+  arrow(cubes[2].right + 6, ox - 4, cy3 + 4);
+  const out = el("g", { class: "blk", style: `--c:${COL.good};--d:2.1s` }, g2);
+  const crop = el("svg", { x: ox, y: oy, width: ow, height: oh, viewBox: "560 230 720 720", preserveAspectRatio: "xMidYMid slice", style: "overflow:hidden" }, out);
+  el("image", { href: "media/res_predict.jpg", x: 0, y: 0, width: 1920, height: 1080 }, crop);
+  el("rect", { x: ox, y: oy, width: ow, height: oh, rx: 10, fill: "none", stroke: COL.good, "stroke-opacity": 0.6, "stroke-width": 2 }, g2);
+  label(g2, ox + ow / 2, oy + oh + 32, "1 @ 64³", "bone probability → mesh");
+
+  // ---- zoom on one neuron (fragment 3): a 3×3 patch, nine weights, one output ----
+  const g3 = el("g", { class: "fragment", "data-fragment-index": 2 }, s);
+  el("rect", { x: 150, y: 222, width: 470, height: 214, rx: 14, fill: "rgba(12,20,34,.92)", stroke: COL.x, "stroke-opacity": 0.35 }, g3);
+  el("text", { x: 172, y: 254, class: "lbl", style: "font-size:20px" }, g3, "one neuron, zoomed in");
+  const nx = 450, ny = 312, w9 = [0.9, 0.2, 0.6, 0.4, 1.0, 0.3, 0.7, 0.15, 0.5];
+  for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) {
+    const px = 200 + c * 34, py = 280 + r * 32, wv = w9[r * 3 + c];
+    el("line", { x1: px, y1: py, x2: nx, y2: ny, stroke: COL.x, "stroke-width": 0.6 + 3.4 * wv, opacity: 0.25 + 0.6 * wv }, g3);
+    el("circle", { cx: px, cy: py, r: 10, fill: "#0b1626", stroke: COL.x, "stroke-width": 2 }, g3);
+  }
+  el("circle", { cx: nx, cy: ny, r: 18, fill: COL.warm, stroke: "#05070b", "stroke-width": 2, class: "blk", style: `--c:${COL.warm};--d:0s` }, g3);
+  el("text", { x: nx + 30, y: ny - 4, class: "sub" }, g3, "weighted sum");
+  el("text", { x: nx + 30, y: ny + 20, class: "sub" }, g3, "→ ReLU");
+  el("text", { x: 172, y: 392, class: "sub", style: "font-size:16px" }, g3, "3×3 pixels × every channel → one number, slid over the image");
+  el("text", { x: 172, y: 421, class: "sub", style: `font-size:16px;fill:${COL.text}` }, g3, "679,473 weights: 592,856 in the encoders · 86,617 in the decoder");
 })();
 
 // ---- numbers computed from the per-patient scores ----
