@@ -1,0 +1,29 @@
+{
+ "threshold": 0.44999999999999996,
+ "cases": {
+  "best": {
+   "sid": "s1224",
+   "dice": 0.898,
+   "mean_err_mm": 2.79,
+   "p95_err_mm": 5.8,
+   "truth_verts": 8850,
+   "pred_verts": 8809
+  },
+  "median": {
+   "sid": "s0252",
+   "dice": 0.828,
+   "mean_err_mm": 3.72,
+   "p95_err_mm": 6.8,
+   "truth_verts": 6485,
+   "pred_verts": 6454
+  },
+  "worst": {
+   "sid": "s1326",
+   "dice": 0.388,
+   "mean_err_mm": 9.14,
+   "p95_err_mm": 25.1,
+   "truth_verts": 9139,
+   "pred_verts": 7579
+  }
+ }
+}

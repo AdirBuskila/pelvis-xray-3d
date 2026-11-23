@@ -1,0 +1,746 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Two X-rays → 3D Pelvis · Results · Adir & Noa</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="vendor/reveal/reset.css">
+<link rel="stylesheet" href="vendor/reveal/reveal.css">
+<link rel="stylesheet" href="deck.css">
+<style>
+  .reveal .print-only { display: none !important; }
+  html.print-pdf .reveal .print-only { display: block !important; }
+  html.print-pdf video { display: none !important; }
+  .hero-vid { position: absolute; top: 20px; right: -160px; width: 1500px; height: auto; pointer-events: none;
+    -webkit-mask-image: radial-gradient(ellipse 48% 50% at 50% 50%, #000 62%, transparent 100%); mask-image: radial-gradient(ellipse 48% 50% at 50% 50%, #000 62%, transparent 100%); }
+  .hero-vid.far { right: -330px; top: -20px; }
+  .notes-he { direction: rtl; text-align: right; }
+  /* full-bleed clip behind a slide, faded at the edges */
+  .bleed { position: absolute; left: -120px; right: -120px; top: 150px; height: auto; pointer-events: none;
+    -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 8%, #000 88%, transparent 100%); mask-image: linear-gradient(180deg, transparent 0, #000 8%, #000 88%, transparent 100%); }
+  .bleed video, .bleed img { width: 100%; display: block; }
+  .frame > .kicker, .frame > h2, .stack-labels, .frame > .foot { position: relative; z-index: 2; }
+  .frame > .foot { position: absolute; }
+  .stack-labels { position: absolute; left: -120px; right: -120px; display: grid; grid-template-columns: repeat(5, 1fr); text-align: center; }
+  .stack-labels .n { font-family: var(--head); font-weight: 700; font-size: 58px; line-height: 1; }
+  .stack-labels .l { font-size: 22px; color: var(--dim); margin-top: 8px; line-height: 1.3; padding: 0 18px; }
+  .pill { display: inline-block; font-family: var(--mono); font-size: 18px; letter-spacing: .1em; text-transform: uppercase; padding: 5px 12px; border-radius: 8px; border: 1px solid var(--edge); color: var(--xray); }
+  .pill.warm { color: var(--warm); border-color: rgba(255,207,127,.35); }
+  .pill.bad { color: var(--bad); border-color: rgba(255,138,148,.35); }
+  .pill.ok { color: var(--good); border-color: rgba(125,255,176,.35); }
+  .bad { color: var(--bad); }
+  .chart svg { overflow: visible; }
+  .chart .tick { fill: var(--mute); font-size: 18px; }
+  .chart .lbl { fill: var(--text); font-size: 22px; }
+  .chart .sub { fill: var(--dim); font-size: 18px; }
+  .chart .val { fill: var(--text); font-size: 22px; font-weight: 600; }
+  .legend-err { display: flex; align-items: center; gap: 16px; font-size: 21px; color: var(--dim); }
+  .legend-err .ramp { width: 260px; height: 14px; border-radius: 7px; background: linear-gradient(90deg, #29db73 0%, #ffa82e 33%, #ff3852 100%); }
+  .case { text-align: center; }
+  .case .d { font-family: var(--head); font-weight: 700; font-size: 60px; line-height: 1; }
+  .case .s { font-size: 21px; color: var(--dim); margin-top: 6px; }
+  .case .xr2 { display: flex; gap: 8px; justify-content: center; margin-top: 14px; }
+  .case .xr2 img { width: 100px; height: 100px; border-radius: 8px; border: 1px solid var(--edge); }
+  .tbl.tight td { padding: 12px 18px 12px 0; }
+  .tbl td.num, .tbl th.num { text-align: right; font-family: var(--mono); color: var(--text); }
+  .netd { display: flex; align-items: center; gap: 14px; }
+  .netd .blk { flex: 1; background: var(--panel); border: 1px solid var(--edge); border-radius: 14px; padding: 26px 16px; text-align: center; min-width: 150px; }
+  .netd .blk .t { font-family: var(--head); font-weight: 600; font-size: 30px; }
+  .netd .blk .s { font-size: 21px; color: var(--dim); margin-top: 6px; line-height: 1.3; }
+  .netd .ar { color: var(--xray); font-size: 30px; }
+  .netd .blk.hot { border-color: rgba(255,207,127,.55); box-shadow: 0 0 30px rgba(255,207,127,.10) inset; }
+</style>
+</head>
+<body>
+<div class="reveal"><div class="slides">
+
+<!-- 1 · TITLE ------------------------------------------------------------ -->
+<section>
+  <video class="hero-vid" src="media/hero.mp4" poster="media/hero.jpg" muted loop playsinline data-autoplay></video>
+  <img class="print-only hero-vid" src="media/hero.jpg">
+  <div class="scrim"></div>
+  <div class="title-wrap">
+    <div class="kicker">Final results <span class="n">·</span> Intro to CV in Medical Imaging</div>
+    <h1>Two X-rays<br><span class="x">→</span> a 3D pelvis</h1>
+    <p class="lede">What we built, the data we trained on, and how well it recovers bones it has never seen: <span class="hl">test Dice 0.815</span> on 55 pelvises.</p>
+    <div class="names"><span><b>Adir Buskila</b></span><span><b>Noa Zadok</b></span><span>HIT · 2026</span></div>
+  </div>
+  <aside class="notes"><div class="notes-he">
+    <p><b>שקופית 1/18 · פתיחה · 🎤 אדיר · ~15 שנ׳ · בלי לחיצות</b></p>
+    <p>שלום שוב. בפעם הקודמת הצגנו תוכנית, היום תוצאות. השורה התחתונה: Dice של 0.815 על 55 אגנים שהרשת לא ראתה.</p>
+    <p>⏭ <b>עוברים לשקופית הבאה</b></p>
+  </div></aside>
+</section>
+
+<!-- 2 · RECAP ------------------------------------------------------------ -->
+<section>
+  <div class="frame">
+    <div class="kicker"><span class="n">01</span> The task, in one picture</div>
+    <h2>Input: a front and a side X-ray. Output: <span class="x">64³ voxels</span> of bone.</h2>
+    <div class="body" style="top:290px">
+      <div class="cols c55-45" style="align-items:start">
+        <div class="media"><video src="media/rig.mp4" poster="media/rig.jpg" muted playsinline data-autoplay></video><img class="print-only" src="media/rig.jpg"></div>
+        <ul class="bul">
+          <li><b>X-rays</b> rendered from real CT with DiffDRR: perspective, 128 × 128, source 750 mm from the pelvis.</li>
+          <li><b>Target</b>: the pelvis mask (both hips + sacrum) in a 320 mm cube, <b>5 mm voxels</b>.</li>
+          <li><b>Score</b>: Dice (overlap) and HD95 (surface distance) on patients the network never saw.</li>
+          <li>Because the X-rays come from CT, <b>the true 3D answer is always known</b>.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <aside class="notes"><div class="notes-he">
+    <p><b>שקופית 2/18 · תזכורת · 🎤 אדיר · ~15 שנ׳ · בלי לחיצות</b></p>
+    <p>תזכורת: מ-CT אמיתי מייצרים צילום מקדימה ומהצד, והרשת מחזירה קובייה של 64³, כל ווקסל 5 מ"מ. התשובה הנכונה תמיד ידועה.</p>
+    <p>⏭ <b>עוברים לשקופית הבאה</b> · מעבירים לנועה</p>
+  </div></aside>
+</section>
+
+<!-- 3 · DATA SCREEN (3D) ------------------------------------------------- -->
+<section>
+  <div class="frame">
+    <div class="kicker"><span class="n">02</span> Data · TotalSegmentator v2.0.1</div>
+    <h2>1,228 CT scans in. <span class="hl">264</span> usable pelvises out.</h2>
+    <div class="bleed" style="top:120px"><video src="media/res_data.mp4" poster="media/res_data.jpg" muted playsinline data-autoplay></video><img class="print-only" src="media/res_data.jpg"></div>
+    <div class="stack-labels" style="top:715px">
+      <div class="fragment rise"><div class="n hl">264</div><div class="l"><b style="color:var(--text)">usable</b>: complete, metal-free, fits the cube</div></div>
+      <div class="fragment rise"><div class="n">15</div><div class="l">pelvis wider than the 320 mm cube</div></div>
+      <div class="fragment rise"><div class="n bad">110</div><div class="l">metal: hip prosthesis, screws</div></div>
+      <div class="fragment rise"><div class="n">202</div><div class="l">pelvis cut off by the scan's edge</div></div>
+      <div class="fragment rise"><div class="n" style="color:var(--dim)">637</div><div class="l">no complete pelvis in the scan at all</div></div>
+    </div>
+  </div>
+  <aside class="notes"><div class="notes-he">
+    <p><b>שקופית 3/18 · סינון הנתונים · 🎤 נועה · ~30 שנ׳ · 5 לחיצות</b></p>
+    <p>סיננו את כל 1,228 הסריקות. כל קובייה בסרטון היא סריקה אחת.</p>
+    <p>▶ <b>לחיצה 1:</b> 264 שמישות,</p>
+    <p>▶ <b>לחיצה 2:</b> 15 רחבות מדי,</p>
+    <p>▶ <b>לחיצה 3:</b> 110 עם מתכת,</p>
+    <p>▶ <b>לחיצה 4:</b> 202 עם אגן חתוך,</p>
+    <p>▶ <b>לחיצה 5:</b> ו-637 בלי אגן שלם בכלל. רובן סריקות של החזה או הבטן.</p>
+    <p>⏭ <b>עוברים לשקופית הבאה</b></p>
+  </div></aside>
+</section>
+
+<!-- 4 · WHY WE DROPPED ---------------------------------------------------- -->
+<section>
+  <div class="frame">
+    <div class="kicker"><span class="n">03</span> Why we dropped scans</div>
+    <h2>Every rule protects the <span class="x">ground truth</span>.</h2>
+    <div class="body" style="top:270px">
+      <table class="tbl">
+        <thead><tr><th style="width:27%">Rule</th><th class="num" style="width:9%">Scans</th><th>Why it has to go</th></tr></thead>
+        <tbody>
+          <tr><td>A pelvis bone is missing</td><td class="num">637</td><td>The scan is of the chest, head or upper abdomen. No pelvis, no target.</td></tr>
+          <tr class="fragment rise"><td>Pelvis cut by the scan</td><td class="num">202</td><td>The mask stops at the scan's edge. The network would be marked wrong for drawing bone that really exists.</td></tr>
+          <tr class="fragment rise"><td>Metal</td><td class="num">110</td><td>Implants corrupt the CT, and the X-rays would show metal that the bone mask doesn't. Kept out of val and test; see the note on the training set.</td></tr>
+          <tr class="fragment rise"><td>Wider than the cube</td><td class="num">15</td><td>The 320 mm cube is fixed. A pelvis that doesn't fit would be cut.</td></tr>
+          <tr class="fragment rise"><td style="color:var(--warm)">Usable</td><td class="num" style="color:var(--warm)">264</td><td>Screened <b style="color:var(--text)">before</b> splitting, then split <b style="color:var(--text)">by patient</b>: 179 train · 30 val · 55 test.</td></tr>
+        </tbody>
+      </table>
+      <p class="foot">Screening is automatic and logged per scan (screening.json). Streaming the 23.6 GB archive subject by subject took about 2 h.</p>
+    </div>
+  </div>
+  <aside class="notes"><div class="notes-he">
+    <p><b>שקופית 4/18 · למה הורדנו · 🎤 נועה · ~20 שנ׳ · 4 לחיצות</b></p>
+    <p>כל כלל שומר על התשובה הנכונה. בלי אגן אין מטרה.</p>
+    <p>▶ <b>לחיצה 1:</b> אגן חתוך: הרשת תיענש על עצם שבאמת קיימת.</p>
+    <p>▶ <b>לחיצה 2:</b> מתכת משבשת את ה-CT.</p>
+    <p>▶ <b>לחיצה 3:</b> אגן רחב מהקובייה ייחתך.</p>
+    <p>▶ <b>לחיצה 4:</b> סיננו לפני החלוקה, ולפי מטופל: 179 אימון, 30 validation, 55 test.</p>
+    <p>⏭ <b>עוברים לשקופית הבאה</b></p>
+  </div></aside>
+</section>
+
+<!-- 5 · TRAINING SET ---------------------------------------------------- -->
+<section>
+  <div class="frame">
+    <div class="kicker"><span class="n">04</span> The training set</div>
+    <h2>179 pelvises, stretched to <span class="hl">820</span> training samples.</h2>
+    <div class="body" style="top:270px">
+      <div class="cols c2" style="align-items:start; gap:60px">
+        <div>
+          <figure class="chart" id="ch-split" style="margin:0"></figure>
+          <ul class="bul" style="margin-top:34px">
+            <li><b>Re-posed copies</b>: CT and mask rotated together (tilt ±12°, obliquity ±6°, rotation ±10°, scale 0.95–1.05), X-rays rendered again. Exact for both views.</li>
+            <li class="fragment rise"><b>Mirror</b> left ↔ right with p = 0.5, on the fly.</li>
+            <li class="fragment rise"><span class="bad"><b style="color:var(--bad)">Not used:</b></span> 343 copies of the <b>76 metal patients</b>. A filter in the data loader skipped them without warning. Found after the runs, fixed next.</li>
+          </ul>
+        </div>
+        <div class="media"><video src="media/res_repose.mp4" poster="media/res_repose.jpg" muted loop playsinline data-autoplay></video><img class="print-only" src="media/res_repose.jpg"><span class="tag">re-posed copies · the same pelvis, new poses</span></div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes"><div class="notes-he">
+    <p><b>שקופית 5/18 · סט האימון · 🎤 נועה · ~25 שנ׳ · 2 לחיצות</b></p>
+    <p>179 זה מעט, אז יצרנו עותקים בתנוחות שונות, כמו בסרטון. ביחד 820 דגימות.</p>
+    <p>▶ <b>לחיצה 1:</b> ועוד היפוך שמאל-ימין בזמן האימון.</p>
+    <p>▶ <b>לחיצה 2:</b> ובכנות: 76 מטופלים עם מתכת היו אמורים להיכנס, ובאג דילג עליהם. זה הצעד הבא.</p>
+    <p>⏭ <b>עוברים לשקופית הבאה</b> · מעבירים לאדיר</p>
+  </div></aside>
+</section>
+
+<!-- 6 · WHAT WE BUILT ---------------------------------------------------- -->
+<section>
+  <div class="frame">
+    <div class="kicker"><span class="n">05</span> The network</div>
+    <h2>Encode each X-ray in 2D, <span class="x">lift</span> it into 3D, decode the bone.</h2>
+    <div class="body" style="top:300px">
+      <div class="netd">
+        <div class="blk"><div class="t">AP + LAT</div><div class="s">2 × 128 × 128<br>DRR images</div></div><div class="ar">→</div>
+        <div class="blk"><div class="t">2D encoder</div><div class="s">one per view<br>conv blocks</div></div><div class="ar">→</div>
+        <div class="blk hot"><div class="t hl">Lift</div><div class="s">copy each feature<br>back along its ray</div></div><div class="ar">→</div>
+        <div class="blk"><div class="t">Fuse</div><div class="s">concat the<br>two volumes</div></div><div class="ar">→</div>
+        <div class="blk"><div class="t">3D decoder</div><div class="s">U-Net with<br>skip connections</div></div><div class="ar">→</div>
+        <div class="blk"><div class="t x">64³</div><div class="s">bone probability<br>per voxel</div></div>
+      </div>
+      <div class="cols c3" style="margin-top:56px; gap:34px">
+        <div><div class="stat x" style="font-size:72px">679,473</div><div class="stat-l">parameters. Small on purpose: it trains on a free GPU.</div></div>
+        <div><div class="stat" style="font-size:72px">BCE + Dice</div><div class="stat-l">loss. A plain regression model: no GAN, so it can't invent anatomy.</div></div>
+        <div><div class="stat hl" style="font-size:72px">0.23 s</div><div class="stat-l">per step on a Colab T4 (10× the laptop CPU). 10,000 steps ≈ 40 min.</div></div>
+      </div>
+      <p class="foot">Adam, lr 10⁻³, batch 8, dropout 0.1, intensity augmentation. Best checkpoint chosen on the 30 validation pelvises; the 55 test pelvises are scored once, at the end.</p>
+    </div>
+  </div>
+  <aside class="notes"><div class="notes-he">
+    <p><b>שקופית 6/18 · הרשת · 🎤 אדיר · ~25 שנ׳ · בלי לחיצות</b></p>
+    <p>encoder דו-ממדי לכל צילום. ואז ה-lift: כל feature נמתח לאחור לאורך הקרן שלו לתוך הקובייה. decoder תלת-ממדי מוציא הסתברות לעצם בכל ווקסל.</p>
+    <p>680 אלף פרמטרים, כ-40 דקות אימון על T4. תזכרו את ה-lift, נחזור אליו.</p>
+    <p>⏭ <b>עוברים לשקופית הבאה</b></p>
+  </div></aside>
+</section>
+
+<!-- 7 · FIRST RUN: OVERFITTING ------------------------------------------ -->
+<section>
+  <div class="frame">
+    <div class="kicker"><span class="n">06</span> First run · 14 training pelvises</div>
+    <h2>The loss fell to zero. The validation Dice <span class="hl">didn't move</span>.</h2>
+    <div class="body" style="top:270px">
+      <div class="cols c55-45" style="align-items:center">
+        <figure class="chart" id="ch-overfit" style="margin:0"></figure>
+        <div>
+          <ul class="bul">
+            <li>On the 27-scan local subset: <b>14 train</b>, 4 val, 9 test.</li>
+            <li>Training loss 0.41 → 0.035, val Dice flat at 0.72 from step 500: it <b>memorised</b> its 14 pelvises.</li>
+            <li class="fragment rise">Same network on <b>179</b> pelvises: the val Dice keeps rising. Test Dice <span class="hl">0.62 → 0.76</span>.</li>
+          </ul>
+          <p class="lede fragment rise" style="font-size:30px">Lesson that held all project: <b style="color:var(--text)">data beats tuning</b>.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes"><div class="notes-he">
+    <p><b>שקופית 7/18 · ריצה ראשונה · 🎤 אדיר · ~25 שנ׳ · 3 לחיצות</b></p>
+    <p>ריצה ראשונה, 14 אגנים: ה-loss יורד כמעט לאפס, וה-Dice על ה-validation תקוע. הרשת שיננה.</p>
+    <p>▶ <b>לחיצה 1:</b> (קו ירוק) אותה רשת על 179 אגנים ממשיכה להשתפר.</p>
+    <p>▶ <b>לחיצה 2:</b> ב-test: מ-0.62 ל-0.76.</p>
+    <p>▶ <b>לחיצה 3:</b> השיעור: data beats tuning.</p>
+    <p>⏭ <b>עוברים לשקופית הבאה</b></p>
+  </div></aside>
+</section>
+
+<!-- 8 · THE JOURNEY ------------------------------------------------------ -->
+<section>
+  <div class="frame">
+    <div class="kicker"><span class="n">07</span> Five rounds of training</div>
+    <h2>Test Dice from <span class="x">0.62</span> to <span class="hl">0.815</span>, one change at a time.</h2>
+    <div class="body" style="top:260px">
+      <figure class="chart" id="ch-journey" style="margin:0"></figure>
+      <p class="foot">Test Dice on the 55 test pelvises (the first run: its 9 local test pelvises). Ensembles average the networks' probabilities, threshold chosen on validation.</p>
+    </div>
+  </div>
+  <aside class="notes"><div class="notes-he">
+    <p><b>שקופית 8/18 · חמישה סבבים · 🎤 אדיר · ~25 שנ׳ · 7 לחיצות</b></p>
+    <p>כל עמודה היא שינוי אחד. לחיצה לכל עמודה:</p>
+    <p>▶ <b>לחיצה 1:</b> כל הנתונים: הקפיצה הגדולה, פלוס 0.14.</p>
+    <p>▶ <b>לחיצה 2:</b> היפוך שמאל-ימין.</p>
+    <p>▶ <b>לחיצה 3:</b> ensemble.</p>
+    <p>▶ <b>לחיצה 4:</b> העותקים בתנוחות.</p>
+    <p>▶ <b>לחיצה 5:</b> ensemble.</p>
+    <p>▶ <b>לחיצה 6:</b> ה-lift החדש.</p>
+    <p>▶ <b>לחיצה 7:</b> המודל הסופי, 0.815. השיפור הגדול בא מנתונים, השאר כ-0.01 כל אחד.</p>
+    <p>⏭ <b>עוברים לשקופית הבאה</b></p>
+  </div></aside>
+</section>
+
+<!-- 9 · CONTROLLED EXPERIMENT ------------------------------------------- -->
+<section>
+  <div class="frame">
+    <div class="kicker"><span class="n">08</span> Controlled experiment · one view vs two</div>
+    <h2>The side X-ray is worth <span class="hl">+0.045 Dice</span>, for 51 of 55 patients.</h2>
+    <div class="body" style="top:280px">
+      <div class="cols c55-45" style="align-items:center">
+        <figure class="chart" id="ch-views" style="margin:0"></figure>
+        <div>
+          <ul class="bul">
+            <li>Same network, data, steps and seeds. Only the number of views changes. 3 seeds per arm.</li>
+            <li>Paired by patient, 95% CI by bootstrap over the 55 test patients: <b>[+0.023, +0.062]</b>.</li>
+            <li class="fragment rise">Surprise: with one view and no position input the network <b>can't learn at all</b> (Dice 0.335). The lift copies each pixel along its whole ray, so nothing says <i>where</i> along it a voxel is. Adding voxel coordinates (CoordConv) fixed it.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes"><div class="notes-he">
+    <p><b>שקופית 9/18 · צילום אחד מול שניים · 🎤 אדיר · ~25 שנ׳ · לחיצה אחת</b></p>
+    <p>הניסוי המבוקר: הכל זהה חוץ ממספר הצילומים. הצילום הצדי מוסיף 0.045 Dice, רווח הסמך לא כולל אפס, ועוזר ל-51 מתוך 55 מטופלים.</p>
+    <p>▶ <b>לחיצה 1:</b> הפתעה: עם צילום אחד הרשת לא למדה בכלל, כי אין לה מידע על העומק. הוספת קואורדינטות לכל ווקסל, CoordConv, פתרה את זה.</p>
+    <p>⏭ <b>עוברים לשקופית הבאה</b></p>
+  </div></aside>
+</section>
+
+<!-- 10 · WHAT DIDN'T HELP ----------------------------------------------- -->
+<section>
+  <div class="frame">
+    <div class="kicker"><span class="n">09</span> Negative results</div>
+    <h2>What we tried that <span class="bad">didn't</span> help.</h2>
+    <div class="body" style="top:270px">
+      <table class="tbl tight">
+        <thead><tr><th style="width:34%">Change</th><th class="num">Before</th><th class="num">After</th><th style="padding-left:40px">Why not</th></tr></thead>
+        <tbody>
+          <tr><td>Cosine learning-rate decay</td><td class="num">0.757</td><td class="num">0.757</td><td style="padding-left:40px">Fit the training set better, the test set no better</td></tr>
+          <tr><td>Twice as many steps (20k)</td><td class="num">0.799</td><td class="num">0.800</td><td style="padding-left:40px">The curve had already flattened</td></tr>
+          <tr><td>Weight decay 0.05</td><td class="num">0.757</td><td class="num">0.763</td><td style="padding-left:40px">Within the seed-to-seed noise</td></tr>
+          <tr><td>CoordConv with two views</td><td class="num">0.757</td><td class="num">0.758</td><td style="padding-left:40px">The side view already gives depth</td></tr>
+          <tr><td>Keep the largest piece only</td><td class="num">0.776</td><td class="num">0.776</td><td style="padding-left:40px">The networks rarely leave stray specks</td></tr>
+        </tbody>
+      </table>
+      <p class="lede fragment rise" style="margin-top:34px !important; font-size:30px">Seed noise is ±0.005, so any single-run difference under ~0.01 is <b style="color:var(--text)">not a result</b>.</p>
+    </div>
+  </div>
+  <aside class="notes"><div class="notes-he">
+    <p><b>שקופית 10/18 · מה לא עזר · 🎤 אדיר · ~20 שנ׳ · לחיצה אחת</b></p>
+    <p>מה שלא עזר: learning-rate schedule, אימון כפול, weight decay, ניקוי חתיכות. הכל בתוך הרעש.</p>
+    <p>▶ <b>לחיצה 1:</b> הרעש בין seeds הוא ±0.005, אז הבדל של פחות מ-0.01 הוא לא תוצאה.</p>
+    <p>⏭ <b>עוברים לשקופית הבאה</b> · מעבירים לנועה</p>
+  </div></aside>
+</section>
+
+<!-- 11 · WHAT LIMITS IT ------------------------------------------------- -->
+<section>
+  <div class="frame">
+    <div class="kicker"><span class="n">10</span> Diagnosis, no training</div>
+    <h2>What is holding the Dice back?</h2>
+    <div class="body" style="top:250px">
+      <div class="cols" style="grid-template-columns: repeat(4, 1fr); gap:26px; align-items:stretch">
+        <div class="card"><div class="pill">A · the grid</div><div class="stat x" style="font-size:66px; margin-top:20px">0.792</div><p style="margin-top:14px">Dice of a <b style="color:var(--text)">perfect</b> pelvis shifted by one 5 mm voxel. 61% of pelvis voxels are on the surface.</p></div>
+        <div class="card fragment rise"><div class="pill warm">B · memorising</div><div class="stat hl" style="font-size:54px; margin-top:24px">0.90 / 0.82 / 0.80</div><p style="margin-top:14px">Train / val / test Dice of one network. A 0.10 gap: it partly memorises its 179 pelvises.</p></div>
+        <div class="card fragment rise"><div class="pill bad">C · outliers</div><div class="stat bad" style="font-size:66px; margin-top:20px">2 of 55</div><p style="margin-top:14px">Outliers (0.39, 0.52); everyone else is above 0.72. The worst is a very large patient: the body is wider than the side detector.</p></div>
+        <div class="card on fragment rise"><div class="pill">D · the method</div><div class="stat x" style="font-size:66px; margin-top:20px">21 mm</div><p style="margin-top:14px">The lift reads the X-ray this far, on average, from where each voxel's ray really lands (52 mm at the 95th percentile).</p></div>
+      </div>
+      <p class="lede fragment rise" style="margin-top:36px !important; font-size:30px">A and C are limits of the grid and the data. <span class="hl">D is a bug in the method</span>, so we fixed it.</p>
+    </div>
+  </div>
+  <aside class="notes"><div class="notes-he">
+    <p><b>שקופית 11/18 · מה מגביל · 🎤 נועה · ~35 שנ׳ · 4 לחיצות</b></p>
+    <p>לפני עוד אימון שאלנו מה מגביל. A: אגן מושלם שזז ווקסל אחד מקבל 0.79. הרזולוציה מגבילה.</p>
+    <p>▶ <b>לחיצה 1:</b> B: 0.90 באימון מול 0.80 ב-test. עדיין משננת.</p>
+    <p>▶ <b>לחיצה 2:</b> C: רק 2 חריגים מתוך 55.</p>
+    <p>▶ <b>לחיצה 3:</b> D: ה-lift קורא את הצילום בממוצע 21 מ"מ מהמקום הנכון.</p>
+    <p>▶ <b>לחיצה 4:</b> A ו-C הם הגבלות של הנתונים. D הוא באג בשיטה, אז תיקנו אותו.</p>
+    <p>⏭ <b>עוברים לשקופית הבאה</b></p>
+  </div></aside>
+</section>
+
+<!-- 12 · METHOD B: PERSPECTIVE LIFT ------------------------------------- -->
+<section>
+  <div class="frame">
+    <div class="kicker"><span class="n">11</span> The fix · perspective lift</div>
+    <h2>X-rays fan out from a point. The old lift assumed they were <span class="hl">parallel</span>.</h2>
+    <div class="body" style="top:300px">
+      <div class="cols c55-45" style="align-items:start">
+        <div class="media"><video src="media/res_lift.mp4" poster="media/res_lift.jpg" muted playsinline data-autoplay></video><img class="print-only" src="media/res_lift.jpg"><span class="tag">top view · real geometry</span></div>
+        <div>
+          <ul class="bul">
+            <li><span class="x"><b style="color:var(--xray)">Blue</b></span>: the real rays, source → detector. Magnification goes from <b>1.12×</b> at the back of the cube to <b>1.73×</b> at the front.</li>
+            <li><span class="hl"><b style="color:var(--warm)">Orange</b></span>: the old lift, one straight line per pixel. Right only at one depth.</li>
+            <li class="fragment rise"><b>Method B</b>: project every voxel centre through the real camera (K, R, t), divide by depth, read the feature map there. The pinhole model from weeks 9–10, inside the network.</li>
+            <li class="fragment rise">Check: silhouettes lifted back and intersected contain <b>67–74%</b> of the pelvis (old) vs <b class="ok" style="color:var(--good)">100%</b> (new).</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes"><div class="notes-he">
+    <p><b>שקופית 12/18 · התיקון · 🎤 נועה · ~30 שנ׳ · 2 לחיצות</b></p>
+    <p>קרני רנטגן יוצאות מנקודה אחת ומתפזרות, בכחול. ה-lift הישן הניח קרניים מקבילות, בכתום. זה נכון רק בעומק אחד.</p>
+    <p>▶ <b>לחיצה 1:</b> התיקון: מטילים כל ווקסל דרך מודל ה-pinhole האמיתי, משבועות 9–10.</p>
+    <p>▶ <b>לחיצה 2:</b> בדיקה: הישן מכסה 67–74% מהאגן, החדש 100%.</p>
+    <p>⏭ <b>עוברים לשקופית הבאה</b></p>
+  </div></aside>
+</section>
+
+<!-- 13 · A VS B ---------------------------------------------------------- -->
+<section>
+  <div class="frame">
+    <div class="kicker"><span class="n">12</span> Old vs new lift · same data, seeds and steps</div>
+    <h2>The fix helps: <span class="hl">+0.007 Dice</span>, and the CI excludes zero.</h2>
+    <div class="body" style="top:270px">
+      <div class="cols c55-45" style="align-items:center">
+        <figure class="chart" id="ch-ab" style="margin:0"></figure>
+        <div>
+          <table class="tbl tight">
+            <thead><tr><th></th><th class="num">A · parallel</th><th class="num">B · perspective</th></tr></thead>
+            <tbody>
+              <tr><td>3 single networks</td><td class="num">0.797</td><td class="num" style="color:var(--warm)">0.804</td></tr>
+              <tr><td>Ensemble of 3</td><td class="num">0.808</td><td class="num" style="color:var(--warm)">0.815</td></tr>
+              <tr><td>B − A, 95% CI</td><td class="num" colspan="2">+0.007 [+0.003, +0.011]</td></tr>
+              <tr><td>Patients B better</td><td class="num" colspan="2">33 of 55</td></tr>
+            </tbody>
+          </table>
+          <p class="lede fragment rise" style="font-size:28px; margin-top:28px !important">Real, but small: a quarter of the gain the extra data gave. The network had largely <b style="color:var(--text)">learned to undo</b> the old error with its convolutions.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes"><div class="notes-he">
+    <p><b>שקופית 13/18 · ישן מול חדש · 🎤 נועה · ~20 שנ׳ · לחיצה אחת</b></p>
+    <p>אותם נתונים ואותם seeds, רק ה-lift שונה. כל seed השתפר: פלוס 0.007, ורווח הסמך לא כולל אפס. ה-ensemble החדש: 0.815.</p>
+    <p>▶ <b>לחיצה 1:</b> אמיתי, אבל קטן: הרשת כבר למדה לתקן את הטעות בעצמה.</p>
+    <p>⏭ <b>עוברים לשקופית הבאה</b></p>
+  </div></aside>
+</section>
+
+<!-- 14 · FINAL MODEL IN 3D ---------------------------------------------- -->
+<section>
+  <div class="frame">
+    <div class="kicker"><span class="n">13</span> The final model · 55 pelvises it never saw</div>
+    <h2>Two X-rays in, a 3D pelvis out.</h2>
+    <div class="body" style="top:250px">
+      <div class="cols c55-45" style="align-items:center">
+        <div class="media"><video src="media/res_predict.mp4" poster="media/res_predict.jpg" muted playsinline data-autoplay></video><img class="print-only" src="media/res_predict.jpg"><span class="tag">median test patient · s0252</span></div>
+        <div>
+          <div class="cols c2" style="gap:30px">
+            <div><div class="stat hl">0.815</div><div class="stat-l">mean test Dice<br>(ensemble of 3)</div></div>
+            <div><div class="stat x">7.1 mm</div><div class="stat-l">median HD95<br>(≈ 1.4 voxels)</div></div>
+            <div><div class="stat ok" id="n70">53/55</div><div class="stat-l">patients above<br>Dice 0.70</div></div>
+            <div><div class="stat" id="nmed">0.831</div><div class="stat-l">median patient<br>Dice</div></div>
+          </div>
+          <div class="legend-err" style="margin-top:44px"><span>surface error</span><span>0</span><span class="ramp"></span><span>15+ mm</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes"><div class="notes-he">
+    <p><b>שקופית 14/18 · המודל הסופי · 🎤 נועה · ~20 שנ׳ · בלי לחיצות</b></p>
+    <p>המודל הסופי על מטופל חציוני. ירוק קרוב לאמת, אדום רחוק. תנו לסרטון לרוץ.</p>
+    <p>על 55 מטופלים: Dice 0.815, HD95 של 7.1 מ"מ, כווקסל וחצי. 53 מתוך 55 מעל 0.70.</p>
+    <p>⏭ <b>עוברים לשקופית הבאה</b></p>
+  </div></aside>
+</section>
+
+<!-- 15 · BEST / MEDIAN / WORST ------------------------------------------ -->
+<section>
+  <div class="frame">
+    <div class="kicker"><span class="n">14</span> Best, median, worst</div>
+    <h2>Most errors are within one voxel. The <span class="bad">worst</span> is a data problem.</h2>
+    <div class="bleed" style="top:-20px"><video src="media/res_trio.mp4" poster="media/res_trio.jpg" muted loop playsinline data-autoplay></video><img class="print-only" src="media/res_trio.jpg"></div>
+    <div class="stack-labels" style="top:690px; grid-template-columns: repeat(3, 1fr); left:-60px; right:-60px">
+      <div class="case"><div class="d ok" id="d-best">0.898</div><div class="s">best · s1224</div><div class="xr2"><img src="img/res_best_ap.png"><img src="img/res_best_lat.png"></div></div>
+      <div class="case"><div class="d hl" id="d-median">0.828</div><div class="s">median · s0252</div><div class="xr2"><img src="img/res_median_ap.png"><img src="img/res_median_lat.png"></div></div>
+      <div class="case"><div class="d bad" id="d-worst">0.388</div><div class="s">worst · s1326, a very large patient</div><div class="xr2"><img src="img/res_worst_ap.png"><img src="img/res_worst_lat.png"></div></div>
+    </div>
+    <p class="foot">Colour: distance from the predicted surface to the true one (green 0, orange 5 mm, red ≥ 15 mm). Grey ghost: the true pelvis. Inputs below each: its AP and lateral X-ray.</p>
+  </div>
+  <aside class="notes"><div class="notes-he">
+    <p><b>שקופית 15/18 · הכי טוב, חציוני, הכי גרוע · 🎤 נועה · ~20 שנ׳ · בלי לחיצות</b></p>
+    <p>רוב הטעויות עד ווקסל אחד. הכי גרוע, 0.39: מטופל גדול מאוד, הגוף רחב מהגלאי. זו בעיה של נתונים, לא של השיטה.</p>
+    <p>⏭ <b>עוברים לשקופית הבאה</b> · מעבירים לאדיר</p>
+  </div></aside>
+</section>
+
+<!-- 16 · VS BASELINES --------------------------------------------------- -->
+<section>
+  <div class="frame">
+    <div class="kicker"><span class="n">15</span> Against the bar we set</div>
+    <h2>The network beats copying the most similar pelvis by <span class="hl">+0.25 Dice</span>.</h2>
+    <div class="body" style="top:270px">
+      <figure class="chart" id="ch-base" style="margin:0"></figure>
+      <p class="foot">Baselines from the proposal: 27 clean scans of the local subset, leave-one-out, 64³ grid. Network: the 55 test pelvises of the full dataset (different patients, same grid and metric). Each dot is one test patient. The published value is on different data and is a direction, not a comparison.</p>
+    </div>
+  </div>
+  <aside class="notes"><div class="notes-he">
+    <p><b>שקופית 16/18 · מול ה-baselines · 🎤 אדיר · ~25 שנ׳ · 3 לחיצות</b></p>
+    <p>מול הרף מההצעה: השכן הקרוב 0.57, והאגן הכי טוב במאגר 0.68.</p>
+    <p>▶ <b>לחיצה 1:</b> הרשת הראשונה: 0.62.</p>
+    <p>▶ <b>לחיצה 2:</b> הסופית: 0.815. כל נקודה היא מטופל, וכמעט כולם מעל 0.68. הרשת בונה צורה, לא שולפת.</p>
+    <p>▶ <b>לחיצה 3:</b> הסתייגות: ה-baselines נמדדו על 27 מטופלים אחרים, וה-0.86 שפורסם על נתונים אחרים.</p>
+    <p>⏭ <b>עוברים לשקופית הבאה</b></p>
+  </div></aside>
+</section>
+
+<!-- 17 · NOT DONE / NEXT ------------------------------------------------ -->
+<section>
+  <div class="frame">
+    <div class="kicker"><span class="n">16</span> Honest status</div>
+    <h2>Done, not done, and what we'd do next.</h2>
+    <div class="body" style="top:260px">
+      <div class="cols c3" style="align-items:stretch; gap:30px">
+        <div class="card on">
+          <div class="pill ok">Done</div>
+          <ul class="bul" style="margin-top:22px">
+            <li>Full screening of <b>1,228</b> scans</li>
+            <li>Baselines: hull, NN, oracle</li>
+            <li>Network, <b>5 training rounds</b></li>
+            <li>1 vs 2 views, 3 seeds, paired CI</li>
+            <li>Perspective lift, <b>0.815</b></li>
+          </ul>
+        </div>
+        <div class="card warm">
+          <div class="pill warm">Not done yet</div>
+          <ul class="bul" style="margin-top:22px">
+            <li><b>Real X-rays</b>: the DeepFluoro sim-to-real gap</li>
+            <li>The clinical angle (CE) vs Dice</li>
+            <li>The 76 metal patients (loader bug)</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="pill">Next</div>
+          <ul class="bul" style="margin-top:22px">
+            <li>Train with the metal patients: <b>+76 pelvises</b></li>
+            <li>Finer grid (2.5 mm) to break the one-voxel ceiling</li>
+            <li>More large patients, for cases like s1326</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes"><div class="notes-he">
+    <p><b>שקופית 17/18 · סטטוס · 🎤 אדיר · ~20 שנ׳ · בלי לחיצות</b></p>
+    <p>עשינו: סינון מלא, baselines, הרשת, ניסוי מבוקר ותיקון ה-lift.</p>
+    <p>עוד לא: רנטגן אמיתי, הזווית הקלינית, ומטופלי המתכת. הבא בתור: המתכת, ואז ווקסל של 2.5 מ"מ.</p>
+    <p>⏭ <b>עוברים לשקופית הבאה</b> · הסיום, שניכם</p>
+  </div></aside>
+</section>
+
+<!-- 18 · CLOSE ----------------------------------------------------------- -->
+<section>
+  <video class="hero-vid far" src="media/hero.mp4" poster="media/hero.jpg" muted loop playsinline data-autoplay></video>
+  <img class="print-only hero-vid far" src="media/hero.jpg">
+  <div class="scrim"></div>
+  <div class="title-wrap" style="bottom:140px">
+    <div class="kicker">In one line each</div>
+    <ul class="bul" style="max-width:1050px">
+      <li><b>Data:</b> 1,228 CT scans screened, 264 usable, 179 for training.</li>
+      <li><b>Result:</b> test Dice <span class="hl">0.815</span>, HD95 7.1 mm, vs 0.57 for nearest neighbour.</li>
+      <li><b>Biggest lever:</b> more and more varied data, every round.</li>
+      <li><b>Method fix:</b> perspective lift, +0.007 with a CI that excludes zero.</li>
+    </ul>
+    <h1 style="margin-top:56px; font-size:96px">Questions?</h1>
+    <div class="names"><span><b>Adir Buskila</b></span><span><b>Noa Zadok</b></span><span>HIT · 2026</span></div>
+    <p class="mono" style="font-size:19px; color:var(--mute); margin-top:22px">Data: TotalSegmentator v2.0.1 (Wasserthal et al. 2023), CC BY 4.0</p>
+  </div>
+  <aside class="notes"><div class="notes-he">
+    <p><b>שקופית 18/18 · סיום · 🎤 אדיר ונועה · ~20 שנ׳ · בלי לחיצות</b></p>
+    <p><b>נועה:</b> לסיכום: 1,228 סריקות, 264 שמישות, ו-Dice של 0.815, הרבה מעל השכן הקרוב.</p>
+    <p><b>אדיר:</b> מה שעזר הכי הרבה, בכל סבב: עוד נתונים. תודה, נשמח לשאלות.</p>
+    <hr><p><b>שאלות צפויות:</b></p>
+    <p>• למה 0.8 ולא 0.95? אגן מושלם שזז ווקסל אחד כבר מקבל 0.79.</p>
+    <p>• זה עובד על רנטגן אמיתי? עוד לא בדקנו, זה השלב הבא עם DeepFluoro.</p>
+    <p>• למה ensemble? כל רשת טועה אחרת, והממוצע מבטל. פלוס 0.01.</p>
+    <p>• למה בלי המתכת? באג בטוען הנתונים. מתוקן בסבב הבא.</p>
+  </div></aside>
+</section>
+
+</div></div>
+
+<script src="results-data.js"></script>
+<script>
+// ---------- tiny SVG chart helpers (all numbers come from results-data.js or are quoted from REPORT.md) ----------
+const NS = "http://www.w3.org/2000/svg";
+const COL = { x: "#7fd0ff", warm: "#ffcf7f", good: "#7dffb0", bad: "#ff8a94", dim: "#8fa6c4", mute: "#5d6f88", text: "#e9f1ff" };
+function el(tag, attrs, parent, text) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (text !== undefined) e.textContent = text;
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function svg(id, w, h, label) {
+  const s = el("svg", { viewBox: `0 0 ${w} ${h}`, width: "100%", role: "img", "aria-label": label });
+  document.getElementById(id).appendChild(s);
+  return s;
+}
+const lin = (d0, d1, r0, r1) => (v) => r0 + (v - d0) / (d1 - d0) * (r1 - r0);
+
+// ---- split / samples bar ----
+(() => {
+  const s = svg("ch-split", 820, 250, "264 usable pelvises split into 179 train, 30 val, 55 test; training samples");
+  const X = lin(0, 1200, 0, 820);
+  const row = (y, parts, label, sc) => {
+    el("text", { x: 0, y: y - 12, class: "sub" }, s, label);
+    let x0 = 0;
+    for (const [n, c, t, op] of parts) {
+      const w = sc(n);
+      el("rect", { x: x0, y, width: Math.max(2, w - 3), height: 46, rx: 4, fill: c, opacity: op ?? 0.85 }, s);
+      if (t) el("text", { x: x0 + 12, y: y + 31, style: `fill:#04121e;font-size:21px;font-weight:600` }, s, t);
+      x0 += w;
+    }
+  };
+  row(32, [[179, COL.x, "179 train"], [30, COL.dim, "30"], [55, COL.warm, "55 test"]], "264 usable pelvises, split by patient (val: 30)", lin(0, 264, 0, 820));
+  row(132, [[179, COL.x, "179"], [641, COL.x, "+ 641 re-posed copies", 0.55], [343, COL.bad, "343 metal: skipped", 0.35]],
+      "training samples: 820 used", X);
+  el("text", { x: 0, y: 228, class: "tick" }, s, "0"); el("text", { x: X(820), y: 228, class: "tick", "text-anchor": "middle" }, s, "820");
+  el("line", { x1: X(820), x2: X(820), y1: 122, y2: 210, stroke: COL.text, "stroke-dasharray": "4 5", opacity: 0.6 }, s);
+})();
+
+// ---- overfitting: v2-s0 (14 pelvises) vs full-v2-s0 (179) ----
+(() => {
+  const s = svg("ch-overfit", 980, 560, "Training loss and validation Dice over steps, 14 vs 179 training pelvises");
+  const L = 80, R = 900, T = 30, B = 470;
+  const X = lin(0, 6000, L, R), Yd = lin(0.65, 0.80, B, T), Yl = lin(0, 0.6, B, T);
+  for (const v of [0.65, 0.70, 0.75, 0.80]) {
+    el("line", { x1: L, x2: R, y1: Yd(v), y2: Yd(v), class: "grid" }, s);
+    el("text", { x: L - 12, y: Yd(v) + 6, class: "tick", "text-anchor": "end" }, s, v.toFixed(2));
+  }
+  for (const v of [0, 2000, 4000, 6000]) el("text", { x: X(v), y: B + 32, class: "tick", "text-anchor": "middle" }, s, v.toLocaleString());
+  el("text", { x: (L + R) / 2, y: B + 70, class: "sub", "text-anchor": "middle" }, s, "training step");
+  el("text", { x: L - 12, y: T - 10, class: "sub", "text-anchor": "end" }, s, "val Dice");
+  const poly = (pts, c, w, dash, cls) => el("polyline", { points: pts.map((p) => p.join(",")).join(" "), fill: "none", stroke: c,
+    "stroke-width": w, "stroke-dasharray": dash || "", class: cls || "" }, s);
+  const a = RES.curves["v2-s0"], b = RES.curves["full-v2-s0"];
+  poly(a.map((r) => [X(r[0]), Yl(r[1])]), COL.warm, 2.5, "8 6");
+  poly(a.map((r) => [X(r[0]), Yd(r[2])]), COL.x, 3.5);
+  el("text", { x: X(a[a.length - 1][0]) + 14, y: Yl(a[a.length - 1][1]) + 6, style: `fill:${COL.warm};font-size:19px` }, s, "train loss (14) → 0.035");
+  el("text", { x: X(a[a.length - 1][0]) + 14, y: Yd(a[a.length - 1][2]) + 6, style: `fill:${COL.x};font-size:19px` }, s, "val Dice, 14 pelvises");
+  const g = el("g", { class: "fragment" }, s);
+  el("polyline", { points: b.map((r) => [X(r[0]), Yd(r[2])].join(",")).join(" "), fill: "none", stroke: COL.good, "stroke-width": 3.5 }, g);
+  el("text", { x: X(b[b.length - 1][0]) - 6, y: Yd(b[b.length - 1][2]) - 16, style: `fill:${COL.good};font-size:19px`, "text-anchor": "end" }, g, "val Dice, 179 pelvises");
+})();
+
+// ---- journey: test Dice per change ----
+(() => {
+  const s = svg("ch-journey", 1680, 600, "Test Dice after each change");
+  const steps = [
+    ["First run", "14 pelvises", 0.616, COL.dim],
+    ["Full dataset", "179 pelvises", 0.757, COL.x],
+    ["+ mirror", "left ↔ right", 0.776, COL.x],
+    ["Ensemble ×5", "average 5 nets", 0.785, COL.x],
+    ["+ re-posed copies", "820 samples", 0.799, COL.x],
+    ["Ensemble ×3", "", 0.808, COL.x],
+    ["Perspective lift", "single nets", 0.804, COL.warm],
+    ["Ensemble ×3", "final model", 0.815, COL.warm],
+  ];
+  const L = 60, R = 1660, T = 40, B = 460, Y = lin(0.55, 0.85, B, T);
+  for (const v of [0.6, 0.7, 0.8]) {
+    el("line", { x1: L, x2: R, y1: Y(v), y2: Y(v), class: "grid" }, s);
+    el("text", { x: L - 10, y: Y(v) + 6, class: "tick", "text-anchor": "end" }, s, v.toFixed(1));
+  }
+  const bw = (R - L) / steps.length;
+  steps.forEach(([t, sub, v, c], i) => {
+    const g = el("g", i > 0 ? { class: "fragment" } : {}, s);
+    const x = L + i * bw + 14, w = bw - 28;
+    el("rect", { x, y: Y(v), width: w, height: B - Y(v), rx: 4, fill: c, opacity: i === steps.length - 1 ? 1 : 0.7 }, g);
+    el("text", { x: x + w / 2, y: Y(v) - 14, class: "val", "text-anchor": "middle" }, g, v.toFixed(3));
+    el("text", { x: x + w / 2, y: B + 34, class: "lbl", "text-anchor": "middle", style: "font-size:20px" }, g, t);
+    el("text", { x: x + w / 2, y: B + 60, class: "sub", "text-anchor": "middle" }, g, sub);
+  });
+  el("text", { x: L + bw * 1.5, y: Y(0.84), style: `fill:${COL.good};font-size:20px`, "text-anchor": "middle" }, s, "data: +0.14");
+})();
+
+// ---- 1 vs 2 views ----
+(() => {
+  const v = RES.views, s = svg("ch-views", 940, 520, "Test Dice per seed, one view vs two views");
+  const L = 90, R = 900, T = 30, B = 400, Y = lin(0.69, 0.78, B, T);
+  for (const t of [0.70, 0.72, 0.74, 0.76, 0.78]) {
+    el("line", { x1: L, x2: R, y1: Y(t), y2: Y(t), class: "grid" }, s);
+    el("text", { x: L - 12, y: Y(t) + 6, class: "tick", "text-anchor": "end" }, s, t.toFixed(2));
+  }
+  const arms = [["1 view (AP)", v["1 view"], COL.dim, 300], ["2 views (AP + LAT)", v["2 views"], COL.warm, 680]];
+  for (const [name, a, c, x] of arms) {
+    el("line", { x1: x - 90, x2: x + 90, y1: Y(a.mean), y2: Y(a.mean), stroke: c, "stroke-width": 3 }, s);
+    a.per_seed_test_dice.forEach((d, i) => el("circle", { cx: x - 40 + i * 40, cy: Y(d), r: 11, fill: c, stroke: "#05070b", "stroke-width": 2 }, s));
+    el("text", { x, y: B + 40, class: "lbl", "text-anchor": "middle" }, s, name);
+    el("text", { x: x + 104, y: Y(a.mean) + 7, class: "val" }, s, a.mean.toFixed(3));
+  }
+  el("text", { x: 490, y: Y(0.737) , class: "val", "text-anchor": "middle", style: `fill:${COL.good}` }, s, "+0.045");
+  el("text", { x: 490, y: Y(0.737) + 28, class: "sub", "text-anchor": "middle" }, s, "51 / 55 patients");
+  el("text", { x: (L + R) / 2, y: B + 90, class: "sub", "text-anchor": "middle" }, s, "test Dice, one dot per seed (CoordConv in both arms, 6,000 steps)");
+})();
+
+// ---- A vs B: per-seed + ensembles ----
+(() => {
+  const c = RES.compare, s = svg("ch-ab", 940, 520, "Test Dice per seed and ensemble, parallel vs perspective lift");
+  const L = 90, R = 900, T = 30, B = 400, Y = lin(0.785, 0.82, B, T);
+  for (const t of [0.79, 0.80, 0.81, 0.82]) {
+    el("line", { x1: L, x2: R, y1: Y(t), y2: Y(t), class: "grid" }, s);
+    el("text", { x: L - 12, y: Y(t) + 6, class: "tick", "text-anchor": "end" }, s, t.toFixed(2));
+  }
+  const xa = 300, xb = 680;
+  [0, 1, 2].forEach((i) => {
+    const a = c.A.single_per_seed[i], b = c.B.single_per_seed[i];
+    el("line", { x1: xa - 40 + i * 40, x2: xb - 40 + i * 40, y1: Y(a), y2: Y(b), stroke: COL.mute, "stroke-width": 2 }, s);
+    el("circle", { cx: xa - 40 + i * 40, cy: Y(a), r: 10, fill: COL.dim, stroke: "#05070b", "stroke-width": 2 }, s);
+    el("circle", { cx: xb - 40 + i * 40, cy: Y(b), r: 10, fill: COL.warm, stroke: "#05070b", "stroke-width": 2 }, s);
+  });
+  for (const [x, v, col] of [[xa, c.A.ensemble, COL.dim], [xb, c.B.ensemble, COL.warm]]) {
+    el("rect", { x: x - 95, y: Y(v) - 3, width: 190, height: 6, rx: 3, fill: col }, s);
+    el("text", { x: x + 108, y: Y(v) + 7, class: "val" }, s, v.toFixed(3));
+  }
+  el("text", { x: xa + 108, y: Y(c.A.ensemble) + 32, class: "sub" }, s, "ensemble");
+  el("text", { x: xa, y: B + 40, class: "lbl", "text-anchor": "middle" }, s, "A · parallel lift");
+  el("text", { x: xb, y: B + 40, class: "lbl", "text-anchor": "middle" }, s, "B · perspective lift");
+  el("text", { x: (L + R) / 2, y: B + 90, class: "sub", "text-anchor": "middle" }, s, "test Dice: dots = single networks (lines join the same seed), bars = ensemble of 3");
+})();
+
+// ---- vs baselines, plus the 55 test patients as dots ----
+(() => {
+  const s = svg("ch-base", 1680, 560, "Baselines and the network, Dice");
+  const L = 470, R = 1630, X = lin(0, 1, L, R);
+  for (const t of [0, 0.2, 0.4, 0.6, 0.8, 1.0]) {
+    el("line", { x1: X(t), x2: X(t), y1: 10, y2: 490, class: "grid" }, s);
+    el("text", { x: X(t), y: 520, class: "tick", "text-anchor": "middle" }, s, t.toFixed(1));
+  }
+  el("text", { x: (L + R) / 2, y: 552, class: "sub", "text-anchor": "middle" }, s, "Dice (higher is better)");
+  const rows = [
+    ["Visual hull (geometry)", 0.38, COL.x, 0.5],
+    ["Random other pelvis", 0.54, COL.x, 0.5],
+    ["Nearest neighbour", 0.57, COL.x, 0.75],
+    ["Best pelvis in database", 0.68, "none", 1],
+    ["First network (14 pelvises)", 0.616, COL.dim, 0.6],
+    ["Final network", 0.815, COL.warm, 1],
+  ];
+  rows.forEach(([name, v, c, op], i) => {
+    const y = 22 + i * 78, g = el("g", i >= 4 ? { class: "fragment" } : {}, s);
+    el("text", { x: L - 26, y: y + 32, class: "lbl", "text-anchor": "end", style: i === 5 ? `fill:${COL.warm}` : "" }, g, name);
+    if (c === "none") el("rect", { x: L, y, width: X(v) - L, height: 46, rx: 4, fill: "none", stroke: COL.x, "stroke-width": 2, "stroke-dasharray": "8 6" }, g);
+    else el("rect", { x: L, y, width: X(v) - L, height: 46, rx: 4, fill: c, opacity: op }, g);
+    el("text", { x: X(v) + 14, y: y + 32, class: "val" }, g, v.toFixed(i === 5 || i === 4 ? 3 : 2));
+    if (i === 5) {
+      // the 55 test patients, jittered vertically inside the bar's row
+      const vals = Object.values(RES.ens_B);
+      vals.forEach((d, k) => el("circle", { cx: X(d), cy: y + 23 + ((k * 37) % 11 - 5) * 3.2, r: 5, fill: "#05070b",
+        stroke: COL.text, "stroke-width": 1.6, opacity: 0.85 }, g));
+    }
+  });
+  const pub = el("g", { class: "fragment" }, s);
+  el("line", { x1: X(0.858), x2: X(0.858), y1: 10, y2: 490, stroke: COL.good, "stroke-width": 2, "stroke-dasharray": "4 6" }, pub);
+  el("text", { x: X(0.858) + 10, y: 30, class: "sub", style: `fill:${COL.good}` }, pub, "published, other data: 0.86");
+})();
+
+// ---- numbers computed from the per-patient scores ----
+(() => {
+  const v = Object.values(RES.ens_B).sort((a, b) => a - b);
+  document.getElementById("n70").textContent = `${v.filter((x) => x > 0.7).length}/${v.length}`;
+  document.getElementById("nmed").textContent = v[Math.floor(v.length / 2)].toFixed(3);
+  for (const k of ["best", "median", "worst"]) {
+    const sid = RES.cases[k].sid;
+    document.getElementById(`d-${k}`).textContent = RES.ens_B[sid].toFixed(3);
+  }
+})();
+</script>
+<script src="vendor/reveal/reveal.js"></script>
+<script src="vendor/reveal/notes/notes.js"></script>
+<script>
+  const shot = new URLSearchParams(location.search).has("shot"); // screenshot mode: all fragments shown
+  Reveal.initialize({
+    fragments: !shot,
+    width: 1920, height: 1080, margin: 0, minScale: 0.2, maxScale: 2,
+    hash: true, controls: false, progress: true, slideNumber: "c/t", center: false,
+    transition: "fade", transitionSpeed: "default", backgroundTransition: "fade",
+    autoPlayMedia: null, pdfSeparateFragments: false, showNotes: false,
+    plugins: [RevealNotes],
+  });
+</script>
+</body>
+</html>
